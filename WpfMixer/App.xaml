@@ -381,6 +381,280 @@
             <conv:DoubleToDbStringConverter x:Key="DoubleToDbStr"/>
             <conv:EnumToBoolConverter       x:Key="EnumToBool"/>
 
+            <!-- ══ COMBOBOX ITEM ═════════════════════════════════════════════════ -->
+            <Style TargetType="ComboBoxItem">
+                <Setter Property="Background"  Value="{DynamicResource BgPanel}"/>
+                <Setter Property="Foreground"  Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="Padding"     Value="8,5"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBoxItem">
+                            <Border x:Name="bg"
+                                    Background="{TemplateBinding Background}"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource AccentGlowColor}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ══ COMBOBOX ══════════════════════════════════════════════════════ -->
+            <Style TargetType="ComboBox">
+                <Setter Property="Background"       Value="{DynamicResource BgControl}"/>
+                <Setter Property="Foreground"       Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="BorderBrush"      Value="{DynamicResource BorderBrush}"/>
+                <Setter Property="BorderThickness"  Value="1"/>
+                <Setter Property="Padding"          Value="6,4"/>
+                <Setter Property="Cursor"           Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBox">
+                            <Grid>
+                                <ToggleButton x:Name="toggleBtn"
+                                              Background="{TemplateBinding Background}"
+                                              BorderBrush="{TemplateBinding BorderBrush}"
+                                              BorderThickness="{TemplateBinding BorderThickness}"
+                                              Focusable="False"
+                                              IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                              ClickMode="Press">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border x:Name="tbBorder"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="{DynamicResource RadiusSmall}">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="20"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ContentPresenter Grid.Column="0" Margin="8,4,2,4"
+                                                                      HorizontalAlignment="Left"
+                                                                      VerticalAlignment="Center"/>
+                                                    <Path Grid.Column="1"
+                                                          Data="M 2 4 L 6 8 L 10 4"
+                                                          Stroke="{DynamicResource TextSecondary}"
+                                                          StrokeThickness="1.5"
+                                                          StrokeStartLineCap="Round"
+                                                          StrokeEndLineCap="Round"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="tbBorder" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                                    <Setter TargetName="tbBorder" Property="BorderBrush" Value="{DynamicResource BorderFocusColor}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="tbBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+                                <ContentPresenter x:Name="contentPresenter"
+                                                  Margin="8,4,24,4"
+                                                  IsHitTestVisible="False"
+                                                  HorizontalAlignment="Left"
+                                                  VerticalAlignment="Center"
+                                                  Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+                                <Popup x:Name="PART_Popup"
+                                       IsOpen="{TemplateBinding IsDropDownOpen}"
+                                       AllowsTransparency="True"
+                                       Focusable="False"
+                                       PopupAnimation="Slide"
+                                       Placement="Bottom">
+                                    <Border x:Name="popupBorder"
+                                            Background="{DynamicResource BgPanel}"
+                                            BorderBrush="{DynamicResource BorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{DynamicResource RadiusSmall}"
+                                            MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=ComboBox}}"
+                                            MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                        <ScrollViewer>
+                                            <ItemsPresenter/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ══ LISTBOX ITEM ══════════════════════════════════════════════════ -->
+            <Style TargetType="ListBoxItem">
+                <Setter Property="Background"  Value="Transparent"/>
+                <Setter Property="Foreground"  Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="Padding"     Value="8,5"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBoxItem">
+                            <Border x:Name="bg"
+                                    Background="{TemplateBinding Background}"
+                                    Padding="{TemplateBinding Padding}"
+                                    CornerRadius="{DynamicResource RadiusSmall}"
+                                    Margin="2,1">
+                                <ContentPresenter/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource AccentGlowColor}"/>
+                                    <Setter TargetName="bg" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ══ LISTBOX ════════════════════════════════════════════════════════ -->
+            <Style TargetType="ListBox">
+                <Setter Property="Background"       Value="{DynamicResource BgPanel}"/>
+                <Setter Property="Foreground"       Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="BorderBrush"      Value="{DynamicResource BorderBrush}"/>
+                <Setter Property="BorderThickness"  Value="1"/>
+                <Setter Property="Padding"          Value="2"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListBox">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{DynamicResource RadiusSmall}"
+                                    Padding="{TemplateBinding Padding}">
+                                <ScrollViewer>
+                                    <ItemsPresenter/>
+                                </ScrollViewer>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ══ CONTEXT MENU ══════════════════════════════════════════════════ -->
+            <Style TargetType="ContextMenu">
+                <Setter Property="Background"      Value="{DynamicResource BgPanel}"/>
+                <Setter Property="Foreground"      Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="BorderBrush"     Value="{DynamicResource BorderBrush}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding"         Value="2"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ContextMenu">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{DynamicResource RadiusSmall}"
+                                    Padding="{TemplateBinding Padding}">
+                                <ItemsPresenter/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ══ MENU ITEM ══════════════════════════════════════════════════════ -->
+            <Style TargetType="MenuItem">
+                <Setter Property="Background"  Value="Transparent"/>
+                <Setter Property="Foreground"  Value="{DynamicResource TextPrimary}"/>
+                <Setter Property="Padding"     Value="10,6"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="MenuItem">
+                            <Border x:Name="bg"
+                                    Background="{TemplateBinding Background}"
+                                    Padding="{TemplateBinding Padding}"
+                                    CornerRadius="{DynamicResource RadiusSmall}"
+                                    Margin="2,1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="Icon"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="Shortcut"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter Grid.Column="0"
+                                                      x:Name="Icon"
+                                                      ContentSource="Icon"
+                                                      Width="16" Height="16"
+                                                      Margin="0,0,6,0"
+                                                      VerticalAlignment="Center"/>
+                                    <ContentPresenter Grid.Column="1"
+                                                      ContentSource="Header"
+                                                      VerticalAlignment="Center"
+                                                      RecognizesAccessKey="True"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{TemplateBinding InputGestureText}"
+                                               Foreground="{DynamicResource TextSecondary}"
+                                               Margin="16,0,4,0"
+                                               VerticalAlignment="Center"/>
+                                    <Path Grid.Column="3"
+                                          x:Name="arrow"
+                                          Data="M 2 4 L 6 8 L 10 4"
+                                          Stroke="{DynamicResource TextSecondary}"
+                                          StrokeThickness="1.5"
+                                          Margin="4,0,0,0"
+                                          VerticalAlignment="Center"
+                                          Visibility="Collapsed"/>
+                                    <Popup x:Name="PART_Popup"
+                                           IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                           AllowsTransparency="True"
+                                           Focusable="False"
+                                           PopupAnimation="Fade"
+                                           Placement="Right">
+                                        <Border Background="{DynamicResource BgPanel}"
+                                                BorderBrush="{DynamicResource BorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{DynamicResource RadiusSmall}"
+                                                Padding="2">
+                                            <ItemsPresenter/>
+                                        </Border>
+                                    </Popup>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource TextDimColor}"/>
+                                </Trigger>
+                                <Trigger Property="Role" Value="TopLevelHeader">
+                                    <Setter TargetName="arrow" Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                                <Trigger Property="Role" Value="SubmenuHeader">
+                                    <Setter TargetName="arrow" Property="Visibility" Value="Visible"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ══ SEPARATOR (inside menus/toolbars) ════════════════════════════ -->
+            <Style TargetType="Separator">
+                <Setter Property="Background"  Value="{DynamicResource BorderBrush}"/>
+                <Setter Property="Height"      Value="1"/>
+                <Setter Property="Margin"      Value="4,3"/>
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

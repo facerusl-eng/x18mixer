@@ -34,6 +34,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private SceneManagerViewModel _sceneManager;
     [ObservableProperty] private PerformanceViewModel _performance;
     [ObservableProperty] private RemoteControlViewModel _remoteControl;
+    [ObservableProperty] private AppearanceViewModel _appearance;
 
     public bool IsSofActive => BusMix.IsSofActive;
     public int SelectedSofBusIndex => BusMix.SelectedBusIndex;
@@ -75,6 +76,11 @@ public partial class MixerViewModel : ObservableObject, IDisposable
             () => Mixer,
             (scene, durationMs) => ApplySceneModelAsync(scene, true, true, durationMs));
         WireBusMix(_busMix);
+
+        // ── Appearance / theme settings ─────────────────────────────────────
+        var settingsSvc = new SettingsService();
+        var settingsModel = settingsSvc.Load();
+        _appearance = new AppearanceViewModel(settingsSvc, settingsModel);
 
         _historyDebounce = new System.Timers.Timer(300) { AutoReset = false };
         _historyDebounce.Elapsed += HistoryDebounceElapsed;

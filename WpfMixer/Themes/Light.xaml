@@ -1,0 +1,55 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LIGHT THEME  (Clean studio / daylight mode)
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Color x:Key="BgDeepColor">    #FFF0F0F0</Color>
+    <Color x:Key="BgPanelColor">   #FFE8E8E8</Color>
+    <Color x:Key="BgStripColor">   #FFDDDDDD</Color>
+    <Color x:Key="BgControlColor"> #FFD0D0D0</Color>
+    <Color x:Key="BgHoverColor">   #FFBBBBBB</Color>
+    <Color x:Key="BgPressColor">   #FFA0A0A0</Color>
+
+    <Color x:Key="BorderColor">    #FFAAAAAA</Color>
+    <Color x:Key="BorderFocusColor">#FF666666</Color>
+
+    <Color x:Key="AccentColor">    #FF1565C0</Color>
+    <Color x:Key="AccentDimColor"> #FF0D47A1</Color>
+    <Color x:Key="AccentGlowColor">#3D1565C0</Color>
+
+    <Color x:Key="MuteColor">      #FFC62828</Color>
+    <Color x:Key="SoloColor">      #FFE65100</Color>
+    <Color x:Key="SelectColor">    #FF1565C0</Color>
+    <Color x:Key="ClipColor">      #FFDD0000</Color>
+    <Color x:Key="WarningColor">   #FFE65100</Color>
+
+    <Color x:Key="TextPrimaryColor">  #FF111111</Color>
+    <Color x:Key="TextSecondaryColor">#FF555555</Color>
+    <Color x:Key="TextDimColor">      #FF999999</Color>
+    <Color x:Key="TextOnAccentColor"> #FFFFFFFF</Color>
+
+    <Color x:Key="FaderTrackColor">   #FFBBBBBB</Color>
+    <Color x:Key="FaderThumbColor">   #FF444444</Color>
+    <Color x:Key="MeterGreenColor">   #FF2E7D32</Color>
+    <Color x:Key="MeterYellowColor">  #FFF9A825</Color>
+    <Color x:Key="MeterRedColor">     #FFDD0000</Color>
+    <Color x:Key="MeterOffGreenColor">#FFBAD3BB</Color>
+    <Color x:Key="MeterOffYellColor"> #FFF5DCA0</Color>
+    <Color x:Key="MeterOffRedColor">  #FFF5BABA</Color>
+    <Color x:Key="PeakHoldColor">     #FF111111</Color>
+    <Color x:Key="ClipLedColor">      #FFDD0000</Color>
+
+    <CornerRadius x:Key="RadiusSmall">3</CornerRadius>
+    <CornerRadius x:Key="RadiusMedium">6</CornerRadius>
+    <CornerRadius x:Key="RadiusLarge">10</CornerRadius>
+    <CornerRadius x:Key="RadiusStrip">4,4,0,0</CornerRadius>
+
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                x:Key="ShadowBlurSmall">4</sys:Double>
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                x:Key="ShadowBlurMedium">12</sys:Double>
+    <Color x:Key="ShadowColor">#44000000</Color>
+
+</ResourceDictionary>

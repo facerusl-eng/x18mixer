@@ -79,7 +79,14 @@
                     <Button Content="PERFORM" Style="{StaticResource PtButton}"
                             Command="{Binding TogglePerformanceModeCommand}"
                             BorderBrush="#FF1DB954" Margin="0,0,6,0"/>
-                    <Button Content="PANIC" FontWeight="Bold" FontSize="13"
+                              <!-- Theme switcher -->
+                              <ComboBox ItemsSource="{Binding Appearance.Themes}"
+                                  SelectedItem="{Binding Appearance.SelectedTheme}"
+                                  DisplayMemberPath="Name"
+                                  Width="90" Height="24" VerticalAlignment="Center"
+                                  Margin="0,0,4,0"
+                                  ToolTip="Switch theme"/>
+                              <Button Content="PANIC" FontWeight="Bold" FontSize="13"
                             Style="{StaticResource PtButton}"
                             Command="{Binding PanicMuteCommand}"
                             Background="#FF3A0000" BorderBrush="#FFE53935" Foreground="#FFE53935"/>
@@ -252,6 +259,11 @@
             <TabItem Header="REMOTE">
                 <views:RemoteControlView DataContext="{Binding RemoteControl}" />
             </TabItem>
+
+                <!-- ─── APPEARANCE / SETTINGS TAB ─── -->
+                <TabItem Header="APPEARANCE">
+                    <views:AppearancePanel DataContext="{Binding Appearance}"/>
+                </TabItem>
 
         </TabControl>
 

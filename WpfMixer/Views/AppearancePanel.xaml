@@ -1,0 +1,121 @@
+<UserControl x:Class="WpfMixer.Views.AppearancePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:WpfMixer.ViewModels"
+             Background="{DynamicResource BgPanel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16,12" Width="320">
+
+            <!-- ── Header ─────────────────────────────────────────────────── -->
+            <TextBlock Text="APPEARANCE &amp; ACCESSIBILITY"
+                       FontFamily="{StaticResource HeadingFont}"
+                       FontSize="13" FontWeight="SemiBold"
+                       Foreground="{DynamicResource Accent}"
+                       Margin="0,0,0,14"/>
+
+            <!-- ── Theme ─────────────────────────────────────────────────── -->
+            <TextBlock Text="THEME" FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                       Margin="0,0,0,4"/>
+            <ComboBox ItemsSource="{Binding Themes}"
+                      SelectedItem="{Binding SelectedTheme}"
+                      DisplayMemberPath="Name"
+                      Background="{DynamicResource BgControl}"
+                      Foreground="{DynamicResource TextPrimary}"
+                      BorderBrush="{DynamicResource BorderBrush}"
+                      Height="28" Margin="0,0,0,12"/>
+
+            <Separator Background="{DynamicResource BorderBrush}" Margin="0,4,0,12"/>
+
+            <!-- ── Font Scale ─────────────────────────────────────────────── -->
+            <Grid Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Font Scale"
+                           Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1"
+                           Text="{Binding FontScale, StringFormat={}{0:P0}}"
+                           Foreground="{DynamicResource TextSecondary}"
+                           FontFamily="{StaticResource MonoFont}" VerticalAlignment="Center"/>
+            </Grid>
+            <Slider Minimum="0.8" Maximum="1.6" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                    Value="{Binding FontScale}" Height="22" Margin="0,0,0,12"/>
+
+            <!-- ── Accessibility toggles ───────────────────────────────────── -->
+            <TextBlock Text="ACCESSIBILITY" FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                       Margin="0,0,0,4"/>
+
+            <CheckBox IsChecked="{Binding LargeText}" Foreground="{DynamicResource TextPrimary}"
+                      Margin="0,0,0,6">
+                <TextBlock Text="Large Text Mode  (≥1.2× scale)"/>
+            </CheckBox>
+
+            <CheckBox IsChecked="{Binding ReduceMotion}" Foreground="{DynamicResource TextPrimary}"
+                      Margin="0,0,0,6">
+                <TextBlock Text="Reduce Motion  (disables animations)"/>
+            </CheckBox>
+
+            <CheckBox IsChecked="{Binding UiSounds}" Foreground="{DynamicResource TextPrimary}"
+                      Margin="0,0,0,14">
+                <TextBlock Text="UI Sound Feedback"/>
+            </CheckBox>
+
+            <Separator Background="{DynamicResource BorderBrush}" Margin="0,0,0,12"/>
+
+            <!-- ── Meter settings ─────────────────────────────────────────── -->
+            <TextBlock Text="METER BEHAVIOR" FontSize="10" Foreground="{DynamicResource TextSecondary}"
+                       Margin="0,0,0,4"/>
+
+            <Grid Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Attack speed" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextPrimary}"/>
+                <TextBlock Grid.Column="1" FontFamily="{StaticResource MonoFont}"
+                           Text="{Binding MeterAttack, StringFormat={}{0:F2}}"
+                           Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+            </Grid>
+            <Slider Minimum="0.05" Maximum="0.5" TickFrequency="0.05" IsSnapToTickEnabled="True"
+                    Value="{Binding MeterAttack}" Height="22" Margin="0,0,0,8"/>
+
+            <Grid Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Release speed" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextPrimary}"/>
+                <TextBlock Grid.Column="1" FontFamily="{StaticResource MonoFont}"
+                           Text="{Binding MeterRelease, StringFormat={}{0:F2}}"
+                           Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+            </Grid>
+            <Slider Minimum="0.02" Maximum="0.3" TickFrequency="0.02" IsSnapToTickEnabled="True"
+                    Value="{Binding MeterRelease}" Height="22" Margin="0,0,0,8"/>
+
+            <Grid Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Peak hold (seconds)" VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextPrimary}"/>
+                <TextBlock Grid.Column="1" FontFamily="{StaticResource MonoFont}"
+                           Text="{Binding PeakHoldSecs, StringFormat={}{0:F1}s}"
+                           Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+            </Grid>
+            <Slider Minimum="0.5" Maximum="10" TickFrequency="0.5" IsSnapToTickEnabled="True"
+                    Value="{Binding PeakHoldSecs}" Height="22" Margin="0,0,0,16"/>
+
+            <!-- ── Reset ──────────────────────────────────────────────────── -->
+            <Button Command="{Binding ResetDefaultsCommand}"
+                    Style="{StaticResource PtButton}"
+                    Content="Reset to Defaults"
+                    HorizontalAlignment="Left"
+                    Padding="12,6"/>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

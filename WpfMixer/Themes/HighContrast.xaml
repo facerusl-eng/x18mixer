@@ -1,0 +1,58 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         HIGH CONTRAST ACCESSIBILITY THEME
+         WCAG AA compliant; large text, strong borders, colorblind-safe
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <Color x:Key="BgDeepColor">    #FF000000</Color>
+    <Color x:Key="BgPanelColor">   #FF0A0A0A</Color>
+    <Color x:Key="BgStripColor">   #FF111111</Color>
+    <Color x:Key="BgControlColor"> #FF1A1A1A</Color>
+    <Color x:Key="BgHoverColor">   #FF2A2A2A</Color>
+    <Color x:Key="BgPressColor">   #FF050505</Color>
+
+    <Color x:Key="BorderColor">    #FFFFFFFF</Color>
+    <Color x:Key="BorderFocusColor">#FFFFFF00</Color>
+
+    <!-- Accent: high-vis yellow (safe for most colorblind types) -->
+    <Color x:Key="AccentColor">    #FFFFFF00</Color>
+    <Color x:Key="AccentDimColor"> #FF888800</Color>
+    <Color x:Key="AccentGlowColor">#44FFFF00</Color>
+
+    <!-- Colorblind-safe: use shape/pattern in addition to these -->
+    <Color x:Key="MuteColor">      #FFFF6600</Color>   <!-- orange, not red -->
+    <Color x:Key="SoloColor">      #FFFFE100</Color>   <!-- bright yellow -->
+    <Color x:Key="SelectColor">    #FF00AAFF</Color>   <!-- blue -->
+    <Color x:Key="ClipColor">      #FFFF6600</Color>
+    <Color x:Key="WarningColor">   #FFFFE100</Color>
+
+    <Color x:Key="TextPrimaryColor">  #FFFFFFFF</Color>
+    <Color x:Key="TextSecondaryColor">#FFCCCCCC</Color>
+    <Color x:Key="TextDimColor">      #FF888888</Color>
+    <Color x:Key="TextOnAccentColor"> #FF000000</Color>
+
+    <Color x:Key="FaderTrackColor">   #FF444444</Color>
+    <Color x:Key="FaderThumbColor">   #FFFFFFFF</Color>
+    <Color x:Key="MeterGreenColor">   #FF00FF88</Color>
+    <Color x:Key="MeterYellowColor">  #FFFFFF00</Color>
+    <Color x:Key="MeterRedColor">     #FFFF6600</Color>
+    <Color x:Key="MeterOffGreenColor">#FF003020</Color>
+    <Color x:Key="MeterOffYellColor"> #FF303000</Color>
+    <Color x:Key="MeterOffRedColor">  #FF301800</Color>
+    <Color x:Key="PeakHoldColor">     #FFFFFFFF</Color>
+    <Color x:Key="ClipLedColor">      #FFFF6600</Color>
+
+    <CornerRadius x:Key="RadiusSmall">2</CornerRadius>
+    <CornerRadius x:Key="RadiusMedium">4</CornerRadius>
+    <CornerRadius x:Key="RadiusLarge">6</CornerRadius>
+    <CornerRadius x:Key="RadiusStrip">2,2,0,0</CornerRadius>
+
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                x:Key="ShadowBlurSmall">0</sys:Double>
+    <sys:Double xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                x:Key="ShadowBlurMedium">0</sys:Double>
+    <Color x:Key="ShadowColor">#00000000</Color>
+
+</ResourceDictionary>

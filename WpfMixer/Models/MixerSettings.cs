@@ -12,6 +12,16 @@ public class MixerSettings
     public ObservableCollection<KeyProfile> KeyProfiles { get; set; } = [];
 
     public string ActiveProfileName { get; set; } = "Default";
+
+    // ── Appearance ─────────────────────────────────────────────────────────
+    public string Theme         { get; set; } = "Dark";
+    public double FontScale     { get; set; } = 1.0;    // 0.8 – 1.6
+    public bool   LargeText     { get; set; } = false;
+    public bool   ReduceMotion  { get; set; } = false;
+    public bool   UiSounds      { get; set; } = false;
+    public float  MeterAttack   { get; set; } = 0.15f;  // 0–1, lower = faster attack
+    public float  MeterRelease  { get; set; } = 0.08f;  // 0–1, lower = faster decay
+    public float  PeakHoldSecs  { get; set; } = 2.0f;
 }
 
 /// <summary>A named snapshot of all key assignments.</summary>

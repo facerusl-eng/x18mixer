@@ -1,13 +1,15 @@
-﻿using System.Configuration;
-using System.Data;
-using System.Windows;
+﻿using System.Windows;
+using WpfMixer.Services;
 
 namespace WpfMixer;
 
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
 public partial class App : Application
 {
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        // Apply persisted theme before any window opens (avoids flash-of-default-theme)
+        ThemeService.LoadSaved();
+    }
 }
 

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:conv="clr-namespace:WpfMixer.Converters"
              xmlns:views="clr-namespace:WpfMixer.Views"
-             Width="74">
+             Width="70">
 
     <UserControl.Resources>
         <conv:BoolToMuteColorConverter  x:Key="MuteColor"/>
@@ -18,65 +18,144 @@
     <Border x:Name="StripOuter"
             BorderThickness="1"
             BorderBrush="{Binding IsSelected, Converter={StaticResource SelectBorder}}"
-            CornerRadius="3">
+            Background="#FF141414">
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="6"/>      <!-- Color strip -->
-                <RowDefinition Height="32"/>     <!-- Name + key badge -->
-                <RowDefinition Height="18"/>     <!-- Pan slider -->
-                <RowDefinition Height="*"/>      <!-- Fader + Meter -->
-                <RowDefinition Height="26"/>     <!-- dB readout -->
-                <RowDefinition Height="26"/>     <!-- Mute / Solo / Sel row -->
-                <RowDefinition Height="20"/>     <!-- Momentary checkbox -->
+                <RowDefinition Height="18"/>   <!-- Row 0: Gain / input dB -->
+                <RowDefinition Height="14"/>   <!-- Row 1: 48V / phase icons -->
+                <RowDefinition Height="22"/>   <!-- Row 2: Gate mini-display -->
+                <RowDefinition Height="28"/>   <!-- Row 3: EQ mini-display -->
+                <RowDefinition Height="22"/>   <!-- Row 4: Comp mini-display -->
+                <RowDefinition Height="14"/>   <!-- Row 5: Sends indicator -->
+                <RowDefinition Height="26"/>   <!-- Row 6: Color + Name -->
+                <RowDefinition Height="22"/>   <!-- Row 7: Solo button -->
+                <RowDefinition Height="20"/>   <!-- Row 8: dB readout -->
+                <RowDefinition Height="14"/>   <!-- Row 9: Pan slider -->
+                <RowDefinition Height="*"/>    <!-- Row 10: Fader + Meter -->
+                <RowDefinition Height="28"/>   <!-- Row 11: Mute button -->
             </Grid.RowDefinitions>
 
-            <!-- ── Row 0: Color strip ── -->
-            <Border Grid.Row="0" CornerRadius="3,3,0,0"
-                    Background="{Binding ColorHex, Converter={x:Static conv:HexToBrushConverter.Instance}}"/>
+            <!-- ── Row 0: Gain / Input level ── -->
+            <Border Grid.Row="0" Background="#FF0F0F0F"
+                    BorderBrush="#FF1A1A1A" BorderThickness="0,0,0,1">
+                <TextBlock Text="+0.0"
+                           FontFamily="{StaticResource MonoFont}" FontSize="10"
+                           Foreground="#FFAAAAAA"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
 
-            <!-- ── Row 1: Name + key badge ── -->
-            <Border Grid.Row="1" Background="#FF1E1E1E"
-                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <!-- ── Row 1: 48V + phase indicators ── -->
+            <Grid Grid.Row="1" Background="#FF0D0D0D">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Background="#FF1C1C1C" CornerRadius="2" Padding="3,1" Margin="1,0">
+                        <TextBlock Text="48" FontSize="8" FontFamily="{StaticResource MonoFont}"
+                                   Foreground="#FF444444"/>
+                    </Border>
+                    <Border Background="#FF1C1C1C" CornerRadius="2" Padding="3,1" Margin="1,0">
+                        <TextBlock Text="Ø" FontSize="8" FontFamily="{StaticResource MonoFont}"
+                                   Foreground="#FF444444"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- ── Row 2: Gate mini-display ── -->
+            <Border Grid.Row="2" Background="#FF0A0F0A"
+                    BorderBrush="#FF1A2A1A" BorderThickness="0,1,0,1" Margin="2,0">
+                <Canvas x:Name="GateCanvas" ClipToBounds="True">
+                    <!-- Painted in code-behind on SizeChanged; static placeholder line -->
+                    <Line X1="0" Y1="11" X2="25" Y2="11" Stroke="#FF1E4D1E" StrokeThickness="1"/>
+                    <Line X1="25" Y1="11" X2="30" Y2="2" Stroke="#FF2ECC40" StrokeThickness="1.5"/>
+                    <Line X1="30" Y1="2" X2="35" Y2="11" Stroke="#FF2ECC40" StrokeThickness="1.5"/>
+                    <Line X1="35" Y1="11" X2="100" Y2="11" Stroke="#FF1E4D1E" StrokeThickness="1"/>
+                </Canvas>
+            </Border>
+
+            <!-- ── Row 3: EQ mini-display ── -->
+            <Border Grid.Row="3" Background="#FF0A0A14"
+                    BorderBrush="#FF1A1A2A" BorderThickness="0,0,0,1" Margin="2,0">
+                <Canvas x:Name="EqCanvas" ClipToBounds="True">
+                    <!-- Static EQ curve placeholder -->
+                    <Polyline Points="0,14 8,14 14,10 22,8 30,12 42,9 54,13 66,14"
+                              Stroke="#FF3A5FBF" StrokeThickness="1.5" Fill="Transparent"/>
+                </Canvas>
+            </Border>
+
+            <!-- ── Row 4: Comp mini-display ── -->
+            <Border Grid.Row="4" Background="#FF14100A"
+                    BorderBrush="#FF2A1A0A" BorderThickness="0,0,0,1" Margin="2,0">
+                <Canvas x:Name="CompCanvas" ClipToBounds="True">
+                    <!-- Static comp transfer curve placeholder -->
+                    <Polyline Points="0,20 12,12 24,7 40,5 66,4"
+                              Stroke="#FFCC8800" StrokeThickness="1.5" Fill="Transparent"/>
+                </Canvas>
+            </Border>
+
+            <!-- ── Row 5: Sends level indicator ── -->
+            <Border Grid.Row="5" Background="#FF0D0D0D"
+                    BorderBrush="#FF1A1A1A" BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Rectangle Width="8" Height="8" Fill="#FF225522" Margin="1,0" RadiusX="1" RadiusY="1"/>
+                    <Rectangle Width="8" Height="8" Fill="#FF225522" Margin="1,0" RadiusX="1" RadiusY="1"/>
+                    <Rectangle Width="8" Height="8" Fill="#FF225522" Margin="1,0" RadiusX="1" RadiusY="1"/>
+                    <Rectangle Width="8" Height="8" Fill="#FF225522" Margin="1,0" RadiusX="1" RadiusY="1"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ── Row 6: Channel color + Name ── -->
+            <Border Grid.Row="6"
+                    Background="{Binding ColorHex, Converter={x:Static conv:HexToBrushConverter.Instance}}">
                 <Grid>
                     <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                             Background="Transparent" Foreground="#FFE0E0E0"
-                             BorderThickness="0" FontSize="11" FontWeight="SemiBold"
+                             Background="Transparent"
+                             Foreground="Black"
+                             BorderThickness="0" FontSize="10" FontWeight="Bold"
                              TextAlignment="Center" VerticalAlignment="Center"
-                             Padding="2,0" Margin="0,0,20,0"/>
-                    <!-- Key badge top-right -->
+                             Padding="2,0" Margin="0,0,18,0"/>
+                    <!-- Key badge -->
                     <Border HorizontalAlignment="Right" VerticalAlignment="Top"
-                            Background="#FF2A2A2A" CornerRadius="2" Padding="2,1"
-                            Margin="0,2,2,0" Cursor="Hand"
+                            Background="#44000000" CornerRadius="2" Padding="2,1"
+                            Margin="0,1,2,0" Cursor="Hand"
                             MouseLeftButtonUp="KeyBadge_Click">
-                        <TextBlock FontSize="9" Foreground="#FF8888BB"
+                        <TextBlock FontSize="8" Foreground="#CCFFFFFF"
                                    FontFamily="{StaticResource MonoFont}"
                                    Text="{Binding AssignedKey, FallbackValue='—'}"/>
                     </Border>
                 </Grid>
             </Border>
 
-            <!-- ── Row 2: Pan slider ── -->
-            <Grid Grid.Row="2" Background="#FF1A1A1A" Margin="4,0">
+            <!-- ── Row 7: Solo button ── -->
+            <Button Grid.Row="7" Content="Solo" Margin="3,2"
+                    Background="{Binding IsSolo, Converter={StaticResource SoloColor}}"
+                    Foreground="#FFFFA000"
+                    Style="{StaticResource SoloButton}"
+                    Click="Solo_Click" FontSize="10" FontWeight="Bold" Padding="0"/>
+
+            <!-- ── Row 8: dB readout ── -->
+            <Border Grid.Row="8" Background="#FF0D0D0D"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,1">
+                <TextBlock Text="{Binding FaderLevel, Converter={StaticResource DbLabel}}"
+                           FontFamily="{StaticResource MonoFont}" FontSize="11"
+                           Foreground="#FF00E676"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- ── Row 9: Pan slider ── -->
+            <Grid Grid.Row="9" Background="#FF141414" Margin="4,0">
                 <Slider Style="{StaticResource PanSlider}"
                         Value="{Binding Pan}"
                         VerticalAlignment="Center"/>
-                <!-- Center tick mark -->
-                <TextBlock Text="C" FontSize="9" Foreground="#FF555555"
+                <TextBlock Text="·" FontSize="9" Foreground="#FF333333"
                            HorizontalAlignment="Center" VerticalAlignment="Center"
                            IsHitTestVisible="False"/>
             </Grid>
 
-            <!-- ── Row 3: Fader + LED meter ── -->
-            <Grid Grid.Row="3" Margin="4,6">
+            <!-- ── Row 10: Fader + LED meter ── -->
+            <Grid Grid.Row="10" Margin="3,4">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>    <!-- Fader -->
-                    <ColumnDefinition Width="16"/>   <!-- Meter -->
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
                 </Grid.ColumnDefinitions>
-
-                <!-- Fader scale marks -->
-                <Canvas Grid.Column="0" IsHitTestVisible="False">
-                </Canvas>
 
                 <Slider Grid.Column="0"
                         Style="{StaticResource VerticalFader}"
@@ -88,54 +167,16 @@
                                        VerticalAlignment="Stretch"/>
             </Grid>
 
-            <!-- ── Row 4: dB readout ── -->
-            <Border Grid.Row="4" Background="#FF0D0D0D"
-                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
-                <TextBlock Text="{Binding FaderLevel, Converter={StaticResource DbLabel}}"
-                           FontFamily="{StaticResource MonoFont}" FontSize="12"
-                           Foreground="#FF00E676"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-            </Border>
-
-            <!-- ── Row 5: Mute / Solo / Sel ── -->
-            <Grid Grid.Row="5" Background="#FF1A1A1A" Margin="3,2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="18"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- MUTE -->
-                <Button Grid.Column="0" Content="M" Margin="1,0"
-                        Style="{StaticResource MuteButton}"
-                        Background="{Binding IsMuted, Converter={StaticResource MuteColor}}"
-                        Foreground="White"
-                        Click="Mute_Click" FontSize="10" FontWeight="Bold" Padding="0"/>
-
-                <!-- SOLO -->
-                <Button Grid.Column="1" Content="S" Margin="1,0"
-                        Background="{Binding IsSolo, Converter={StaticResource SoloColor}}"
-                        Foreground="#FFFFA000"
-                        Style="{StaticResource SoloButton}"
-                        Click="Solo_Click" FontSize="10" FontWeight="Bold" Padding="0"/>
-
-                <!-- SELECT dot -->
-                <Border Grid.Column="2" Width="14" Height="14"
-                        CornerRadius="7" Margin="1,6,1,6"
-                        Background="{Binding IsSelected, Converter={StaticResource SelectBorder}}"
-                        BorderBrush="#FF444444" BorderThickness="1"
-                        Cursor="Hand"
-                        MouseLeftButtonUp="Select_Click"/>
-            </Grid>
-
-            <!-- ── Row 6: Momentary checkbox ── -->
-            <CheckBox Grid.Row="6" Content="Mom" IsChecked="{Binding IsMomentaryMute}"
-                      Foreground="#FF666666" FontSize="9"
-                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <!-- ── Row 11: MUTE button ── -->
+            <Button Grid.Row="11" Content="Mute" Margin="2,2"
+                    Style="{StaticResource MuteButton}"
+                    Background="{Binding IsMuted, Converter={StaticResource MuteColor}}"
+                    Foreground="White"
+                    Click="Mute_Click" FontSize="10" FontWeight="Bold" Padding="0"/>
 
             <!-- Key highlight flash overlay -->
-            <Border Grid.RowSpan="7"
-                    BorderThickness="2" CornerRadius="3"
+            <Border Grid.RowSpan="12"
+                    BorderThickness="2"
                     BorderBrush="{Binding IsKeyHighlighted, Converter={StaticResource Highlight}}"
                     IsHitTestVisible="False"/>
         </Grid>

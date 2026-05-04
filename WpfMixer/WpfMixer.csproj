@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="BuildSoft.OscCore" Version="1.1.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="NAudio" Version="2.3.0" />
     <PackageReference Include="NAudio.WinMM" Version="2.3.0" />
     <PackageReference Include="OscCore" Version="1.0.2" />
@@ -21,7 +22,10 @@
     <None Update="wwwroot\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="RemoteConfig.json">
+    <None Update="Data\RemoteConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Data\AppSettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

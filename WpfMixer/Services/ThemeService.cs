@@ -98,9 +98,14 @@ public static class ThemeService
     /// <summary>Load persisted theme choice on startup.</summary>
     public static void LoadSaved()
     {
-        var svc   = new SettingsService();
-        var saved = svc.Load().Theme;
-        if (Enum.TryParse<AppTheme>(saved, out var theme) && theme != AppTheme.Dark)
+        var svc = new SettingsService();
+        var appSettings = svc.LoadAppSettings();
+        var preferred = appSettings.Theme;
+
+        if (string.IsNullOrWhiteSpace(preferred))
+            preferred = svc.Load().Theme;
+
+        if (Enum.TryParse<AppTheme>(preferred, out var theme) && theme != AppTheme.Dark)
             Apply(theme);
         else
             CurrentTheme = AppTheme.Dark;

@@ -4,6 +4,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using WpfMixer.Core.Interfaces;
 using WpfMixer.Models;
 using WpfMixer.Services;
 
@@ -12,10 +13,13 @@ namespace WpfMixer.ViewModels;
 public partial class MixerViewModel : ObservableObject, IDisposable
 {
     // ── Services ────────────────────────────────────────────────────────────
-    private readonly OscClient _osc = new();
-    private readonly DiscoveryService _discovery = new();
-    private readonly SceneService _sceneService = new();
-    private readonly UndoRedoService _undoRedo = new(50);
+    private readonly OscClient _osc;
+    private readonly DiscoveryService _discovery;
+    private readonly SceneService _sceneService;
+    private readonly UndoRedoService _undoRedo;
+    private readonly SettingsService _settingsService;
+    private readonly IMixerSyncService _mixerSyncService;
+    private readonly ILoggingService _logging;
     private readonly SceneTransitionService _sceneTransition;
     public readonly KeyboardService KeyboardService;
 
@@ -57,8 +61,25 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     public ObservableCollection<MuteGroup> MuteGroups => Mixer.MuteGroups;
 
     // ── Constructor ──────────────────────────────────────────────────────────
-    public MixerViewModel()
+    public MixerViewModel(
+        OscClient osc,
+        DiscoveryService discovery,
+        SceneService sceneService,
+        UndoRedoService undoRedo,
+        KeyboardService keyboardService,
+        SettingsService settingsService,
+        IMixerSyncService mixerSyncService,
+        ILoggingService logging)
     {
+        _osc = osc;
+        _discovery = discovery;
+        _sceneService = sceneService;
+        _undoRedo = undoRedo;
+        KeyboardService = keyboardService;
+        _settingsService = settingsService;
+        _mixerSyncService = mixerSyncService;
+        _logging = logging;
+
         _sceneTransition = new SceneTransitionService(_osc);
 
         // ── Core ChannelViewModels (18 channels + main LR) ───────────────────
@@ -78,15 +99,13 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         WireBusMix(_busMix);
 
         // ── Appearance / theme settings ─────────────────────────────────────
-        var settingsSvc = new SettingsService();
-        var settingsModel = settingsSvc.Load();
-        _appearance = new AppearanceViewModel(settingsSvc, settingsModel);
+        var settingsModel = _settingsService.Load();
+        _appearance = new AppearanceViewModel(_settingsService, settingsModel);
 
         _historyDebounce = new System.Timers.Timer(300) { AutoReset = false };
         _historyDebounce.Elapsed += HistoryDebounceElapsed;
 
         // ── Keyboard / routing (uses legacy Channel model) ───────────────────
-        KeyboardService = new KeyboardService();
         KeyboardService.Bind(Mixer.InputChannels, Mixer.MuteGroups);
         KeyboardService.KeyActionFired += OnKeyActionFired;
 
@@ -109,6 +128,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
     public async Task InitializeAsync()
     {
+        _logging.LogInfo("MixerViewModel initialization started");
         StatusText = "Starting auto-discovery…";
 
         string? foundIp = null;
@@ -130,6 +150,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
         if (foundIp == null)
             StatusText = "No X Air mixer found. Enter IP manually.";
+
+        _logging.LogInfo("MixerViewModel initialization completed");
     }
 
     /// <summary>
@@ -217,13 +239,23 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         {
             await _osc.ConnectAsync(ip);   // heartbeat is started inside ConnectAsync
             Mixer.MixerIp = ip;
+            MixerIpInput = ip;
             IsConnected = true;
             StatusText = $"Connected to {ip}";
+            _logging.LogInfo($"Connected to mixer {ip}");
+            _mixerSyncService.UpdateConnectionHint(ip);
+            await _mixerSyncService.OnConnectedAsync(ip);
+
+            var app = _settingsService.LoadAppSettings();
+            app.LastConnectedMixerIP = ip;
+            _settingsService.SaveAppSettings(app);
+
             RequestFullState();
             RequestRoutingState();
         }
         catch (Exception ex)
         {
+            _logging.LogError("Connection failed", ex);
             StatusText = $"Connection failed: {ex.Message}";
         }
     }
@@ -234,6 +266,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         _osc.Disconnect();   // stops heartbeat internally
         IsConnected = false;
         StatusText = "Disconnected";
+        _mixerSyncService.OnDisconnected();
+        _logging.LogWarning("Disconnected from mixer");
     }
 
     private void RequestFullState()
@@ -264,6 +298,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
     private void OnOscMessage(string address, object[] args)
     {
+        _mixerSyncService.OnOscMessageReceived(address);
         // Delegate to the unified handler (routes to ChannelViewModel + legacy routing)
         HandleOscMessage(address, args);
         // Forward to remote web clients
@@ -581,7 +616,12 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         var dlg = new OpenFileDialog { Filter = "Scene (*.json)|*.json" };
         if (dlg.ShowDialog() != true) return;
 
-        var scene = _sceneService.LoadSceneModel(dlg.FileName);
+        await LoadSceneFromPathAsync(dlg.FileName);
+    }
+
+    public async Task LoadSceneFromPathAsync(string scenePath)
+    {
+        var scene = _sceneService.LoadSceneModel(scenePath);
         if (scene is null)
         {
             StatusText = "Failed to load scene file.";
@@ -590,6 +630,11 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
         await ApplySceneModelAsync(scene);
         SceneManager.RefreshScenesCommand.Execute(null);
+
+        var app = _settingsService.LoadAppSettings();
+        app.LastScenePath = scenePath;
+        _settingsService.SaveAppSettings(app);
+        _logging.LogInfo($"Scene loaded: {scenePath}");
     }
 
     [RelayCommand]
@@ -724,6 +769,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     {
         _osc.Disconnect();   // stops heartbeat
         _sceneService.AutoBackup(Mixer);
+        _mixerSyncService.OnDisconnected();
+        _logging.LogInfo("Mixer cleanup complete");
     }
 
     public void Dispose()
@@ -732,5 +779,6 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         RemoteControl.Dispose();
         _osc.Dispose();
         _discovery.Dispose();
+        _mixerSyncService.Dispose();
     }
 }

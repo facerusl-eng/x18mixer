@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using WpfMixer.Core.Helpers;
 
 namespace WpfMixer.Models;
 
@@ -55,7 +56,7 @@ public class RemoteConfig
     // ── Serialisation ─────────────────────────────────────────────────────────
 
     private static readonly string ConfigPath =
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RemoteConfig.json");
+        Path.Combine(AppPaths.Data, "RemoteConfig.json");
 
     private static readonly JsonSerializerOptions _json = new()
     {
@@ -67,6 +68,7 @@ public class RemoteConfig
     {
         try
         {
+            AppPaths.EnsureDirectories();
             if (File.Exists(ConfigPath))
             {
                 var text = File.ReadAllText(ConfigPath);
@@ -83,6 +85,7 @@ public class RemoteConfig
     {
         try
         {
+            AppPaths.EnsureDirectories();
             File.WriteAllText(ConfigPath, JsonSerializer.Serialize(this, _json));
         }
         catch { /* silently ignore I/O errors during save */ }

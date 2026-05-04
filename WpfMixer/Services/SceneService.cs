@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using WpfMixer.Core.Helpers;
 using WpfMixer.Models;
 
 namespace WpfMixer.Services;
@@ -18,12 +19,11 @@ public sealed class SceneService
 
     public SceneService()
     {
-        RootDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
-            "WpfMixer");
+        AppPaths.EnsureDirectories();
+        RootDirectory = AppPaths.Data;
 
-        ScenesDirectory = Path.Combine(RootDirectory, "Scenes");
-        BackupsDirectory = Path.Combine(ScenesDirectory, "Backups");
+        ScenesDirectory = AppPaths.Scenes;
+        BackupsDirectory = AppPaths.Backups;
         PresetsDirectory = Path.Combine(ScenesDirectory, "Presets");
 
         Directory.CreateDirectory(ScenesDirectory);

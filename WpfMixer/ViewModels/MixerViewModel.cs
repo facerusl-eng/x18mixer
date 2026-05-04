@@ -47,6 +47,9 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         foreach (var ch in Mixer.AllChannels)
             WireChannel(ch);
 
+        foreach (var output in Mixer.Outputs)
+            WireOutput(output);
+
         Mixer.InputChannels.CollectionChanged += (_, _) => RebindKeyboard();
         Mixer.MuteGroups.CollectionChanged    += (_, _) => RebindKeyboard();
     }
@@ -96,6 +99,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
             StatusText = $"Connected to {ip}";
             StartHeartbeat();
             RequestFullState();
+            RequestRoutingState();
         }
         catch (Exception ex)
         {
@@ -141,19 +145,60 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     {
         Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            // /ch/XX/mix/fader  or /lr/mix/fader
+            // Channel fader / mute / pan / name / routing
             var ch = FindChannelByOscAddress(address);
-            if (ch == null) return;
+            if (ch != null)
+            {
+                if (address.EndsWith("/mix/fader") && args.Length > 0 && args[0] is float f)
+                    ch.Volume = f;
+                else if (address.EndsWith("/mix/on") && args.Length > 0 && args[0] is int on)
+                    ch.IsMuted = on == 0;
+                else if (address.EndsWith("/mix/pan") && args.Length > 0 && args[0] is float p)
+                    ch.Pan = p;
+                else if (address.EndsWith("/config/name") && args.Length > 0 && args[0] is string name)
+                    ch.Name = name;
+                else if (address.EndsWith("/mix/lr") && args.Length > 0 && args[0] is int lr)
+                    ch.SendToLr = lr == 1;
+                else if (address.EndsWith("/config/source") && args.Length > 0 && args[0] is int src)
+                    ApplyInputSource(ch, src);
+                else
+                    TryApplyBusSend(ch, address, args);
 
-            if (address.EndsWith("/mix/fader") && args.Length > 0 && args[0] is float f)
-                ch.Volume = f;
-            else if (address.EndsWith("/mix/on") && args.Length > 0 && args[0] is int on)
-                ch.IsMuted = on == 0;   // X Air: 0 = muted, 1 = live
-            else if (address.EndsWith("/mix/pan") && args.Length > 0 && args[0] is float p)
-                ch.Pan = p;
-            else if (address.EndsWith("/config/name") && args.Length > 0 && args[0] is string name)
-                ch.Name = name;
+                return;
+            }
+
+            // Output routing
+            var output = Mixer.Outputs.FirstOrDefault(o => address.StartsWith(o.OscBase));
+            if (output != null)
+            {
+                if (address.EndsWith("/src") && args.Length > 0 && args[0] is int osrc)
+                    output.Source = (OutputSource)Math.Clamp(osrc, 0, (int)OutputSource.DirectOut);
+                else if (address.EndsWith("/level") && args.Length > 0 && args[0] is float ol)
+                    output.Level = ol;
+            }
         });
+    }
+
+    private static void ApplyInputSource(Channel ch, int src)
+    {
+        if (src == 0) { ch.InputSource = InputSource.Off; return; }
+        if (src <= 18) { ch.InputSource = InputSource.Analog; ch.AnalogInput = src; return; }
+        ch.InputSource = InputSource.UsbReturn;
+        ch.UsbReturn = src - 18;
+    }
+
+    private static void TryApplyBusSend(Channel ch, string address, object[] args)
+    {
+        foreach (var send in ch.BusSends)
+        {
+            string path = $"{ch.OscBase}/mix/{send.OscToken}";
+            if (address == $"{path}/level" && args.Length > 0 && args[0] is float lv)
+                send.Level = lv;
+            else if (address == $"{path}/on" && args.Length > 0 && args[0] is int on)
+                send.IsOn = on == 1;
+            else if (address == $"{path}/pre" && args.Length > 0 && args[0] is int pre)
+                send.PrePost = pre == 1 ? PrePost.Pre : PrePost.Post;
+        }
     }
 
     private Channel? FindChannelByOscAddress(string address)
@@ -181,8 +226,111 @@ public partial class MixerViewModel : ObservableObject, IDisposable
                 case nameof(Channel.Pan):
                     _osc.Send($"{ch.OscBase}/mix/pan", (float)ch.Pan);
                     break;
+                case nameof(Channel.SendToLr):
+                    _osc.Send($"{ch.OscBase}/mix/lr", ch.SendToLr ? 1 : 0);
+                    break;
+                case nameof(Channel.InputSource):
+                case nameof(Channel.AnalogInput):
+                case nameof(Channel.UsbReturn):
+                    SendInputSource(ch);
+                    break;
             }
         };
+
+        // Wire bus sends
+        foreach (var send in ch.BusSends)
+            WireBusSend(ch, send);
+    }
+
+    private void WireBusSend(Channel ch, BusSend send)
+    {
+        send.PropertyChanged += (_, e) =>
+        {
+            if (!IsConnected) return;
+            string path = $"{ch.OscBase}/mix/{send.OscToken}";
+            switch (e.PropertyName)
+            {
+                case nameof(BusSend.Level):
+                    _osc.Send($"{path}/level", (float)send.Level);
+                    break;
+                case nameof(BusSend.IsOn):
+                    _osc.Send($"{path}/on", send.IsOn ? 1 : 0);
+                    break;
+                case nameof(BusSend.PrePost):
+                    _osc.Send($"{path}/pre", send.IsPre ? 1 : 0);
+                    break;
+            }
+        };
+    }
+
+    private void WireOutput(OutputRoute output)
+    {
+        output.PropertyChanged += (_, e) =>
+        {
+            if (!IsConnected) return;
+            switch (e.PropertyName)
+            {
+                case nameof(OutputRoute.Source):
+                    _osc.Send($"{output.OscBase}/src", output.OscSourceIndex);
+                    break;
+                case nameof(OutputRoute.Level):
+                    _osc.Send($"{output.OscBase}/level", (float)output.Level);
+                    break;
+            }
+        };
+    }
+
+    private void SendInputSource(Channel ch)
+    {
+        if (!IsConnected) return;
+        // X Air /ch/XX/config/source: 0=Off, 1-18=Analog 1-18, 19-36=USB return 1-18
+        int src = ch.InputSource switch
+        {
+            InputSource.Off => 0,
+            InputSource.Analog => ch.AnalogInput,
+            InputSource.UsbReturn => 18 + ch.UsbReturn,
+            _ => 0
+        };
+        _osc.Send($"{ch.OscBase}/config/source", src);
+    }
+
+    // ── Routing commands ─────────────────────────────────────────────────────
+
+    [RelayCommand]
+    private void SetInputSource(Channel ch) => SendInputSource(ch);
+
+    [RelayCommand]
+    private void ToggleBusSendOn(BusSend send) => send.IsOn = !send.IsOn;
+
+    [RelayCommand]
+    private void ToggleBusSendPre(BusSend send) =>
+        send.PrePost = send.IsPre ? PrePost.Post : PrePost.Pre;
+
+    [RelayCommand]
+    private void SetOutputSource(OutputRoute output) =>
+        _osc.Send($"{output.OscBase}/src", output.OscSourceIndex);
+
+    // ── Routing: request state from mixer ────────────────────────────────────
+
+    private void RequestRoutingState()
+    {
+        foreach (var ch in Mixer.AllChannels)
+        {
+            _osc.Send($"{ch.OscBase}/config/source");
+            _osc.Send($"{ch.OscBase}/mix/lr");
+            foreach (var s in ch.BusSends)
+            {
+                string path = $"{ch.OscBase}/mix/{s.OscToken}";
+                _osc.Send($"{path}/level");
+                _osc.Send($"{path}/on");
+                _osc.Send($"{path}/pre");
+            }
+        }
+        foreach (var out_ in Mixer.Outputs)
+        {
+            _osc.Send($"{out_.OscBase}/src");
+            _osc.Send($"{out_.OscBase}/level");
+        }
     }
 
     // ── Mute / Solo / Select commands ────────────────────────────────────────

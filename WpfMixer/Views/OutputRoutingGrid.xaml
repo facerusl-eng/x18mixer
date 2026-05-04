@@ -1,0 +1,97 @@
+<UserControl x:Class="WpfMixer.Views.OutputRoutingGrid"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:WpfMixer.Models"
+             xmlns:local="clr-namespace:WpfMixer.Views"
+             xmlns:conv="clr-namespace:WpfMixer.Converters"
+             Background="{StaticResource BgDeep}">
+
+    <UserControl.Resources>
+        <Style x:Key="OutputLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="8,0,0,0" />
+        </Style>
+        <Style x:Key="SourceLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+            <Setter Property="FontSize" Value="9" />
+            <Setter Property="Margin" Value="8,0,4,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                Padding="8,6" Margin="0,0,0,8" CornerRadius="2,2,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="160" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="OUTPUT" Style="{StaticResource SourceLabel}" />
+                <TextBlock Grid.Column="1" Text="SOURCE" Style="{StaticResource SourceLabel}" />
+                <TextBlock Grid.Column="2" Text="LEVEL" Style="{StaticResource SourceLabel}" />
+            </Grid>
+        </Border>
+
+        <!-- Output rows -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Mixer.Outputs}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:OutputRoute}">
+                    <Border Background="{StaticResource BgStrip}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1"
+                            Padding="4,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="60" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Label -->
+                            <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                       Style="{StaticResource OutputLabel}" />
+
+                            <!-- Source combobox -->
+                            <ComboBox Grid.Column="1"
+                                      SelectedItem="{Binding Source, Mode=TwoWay}"
+                                      ItemsSource="{x:Static local:OutputRoutingGrid.OutputSources}"
+                                      FontFamily="{StaticResource MonoFont}" FontSize="10"
+                                      Background="{StaticResource BgControl}"
+                                      Foreground="{StaticResource TextSecondary}"
+                                      BorderBrush="{StaticResource BorderBrush}"
+                                      Height="24" Margin="8,0" />
+
+                            <!-- Level slider -->
+                            <Slider Grid.Column="2"
+                                    Minimum="0" Maximum="1" SmallChange="0.01"
+                                    Value="{Binding Level, Mode=TwoWay}"
+                                    VerticalAlignment="Center" Margin="8,0" />
+
+                            <!-- Level dB readout -->
+                            <TextBlock Grid.Column="3"
+                                       Text="{Binding Level, Converter={StaticResource DoubleToDbStr}}"
+                                       Foreground="{StaticResource Accent}"
+                                       FontFamily="{StaticResource MonoFont}" FontSize="10"
+                                       VerticalAlignment="Center" HorizontalAlignment="Right"
+                                       Margin="0,0,8,0" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

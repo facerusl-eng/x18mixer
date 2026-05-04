@@ -28,6 +28,12 @@ public class MixerModel : ObservableObject
 
     public ObservableCollection<MuteGroup> MuteGroups { get; set; } = [];
 
+    /// <summary>Physical output routing: aux 1-6, phones (7), main (8).</summary>
+    public ObservableCollection<OutputRoute> Outputs { get; set; } = [];
+
+    /// <summary>USB routing configuration.</summary>
+    public UsbConfig Usb { get; set; } = new();
+
     /// <summary>All channels in display order: inputs + FX returns + main.</summary>
     [JsonIgnore]
     public IEnumerable<Channel> AllChannels =>
@@ -49,28 +55,50 @@ public class MixerModel : ObservableObject
 
         for (int i = 1; i <= 18; i++)
         {
-            model.InputChannels.Add(new Channel
+            var ch = new Channel
             {
                 Name = $"Ch {i:D2}",
                 XAirIndex = i,
                 Type = i % 2 == 0 ? ChannelType.Stereo : ChannelType.Mono,
                 ColorHex = colors[(i - 1) % colors.Length],
                 Volume = 0.75,
-            });
+                AnalogInput = i,
+            };
+            foreach (var s in CreateDefaultBusSends()) ch.BusSends.Add(s);
+            model.InputChannels.Add(ch);
         }
 
         for (int i = 1; i <= 4; i++)
         {
-            model.FxReturns.Add(new Channel
+            var ch = new Channel
             {
                 Name = $"FX {i}",
                 XAirIndex = 100 + i,
                 Type = ChannelType.FxReturn,
                 ColorHex = "#FF7B1FA2",
                 Volume = 0.75,
-            });
+            };
+            foreach (var s in CreateDefaultBusSends()) ch.BusSends.Add(s);
+            model.FxReturns.Add(ch);
         }
 
+        model.MainLR.BusSends.Clear();
+        foreach (var s in CreateDefaultBusSends()) model.MainLR.BusSends.Add(s);
+
+        // Outputs
+        for (int i = 1; i <= 6; i++)
+            model.Outputs.Add(new OutputRoute { OutputIndex = i, Label = $"AUX {i}", Source = (OutputSource)(i - 1 < 6 ? OutputSource.Bus1 + i - 1 : OutputSource.Main) });
+        model.Outputs.Add(new OutputRoute { OutputIndex = 7, Label = "PHONES", Source = OutputSource.Main });
+        model.Outputs.Add(new OutputRoute { OutputIndex = 8, Label = "MAIN LR", Source = OutputSource.Main });
+
         return model;
+    }
+
+    private static IEnumerable<BusSend> CreateDefaultBusSends()
+    {
+        for (int b = 1; b <= 6; b++)
+            yield return new BusSend { BusIndex = b, Label = $"BUS {b}" };
+        for (int f = 1; f <= 4; f++)
+            yield return new BusSend { BusIndex = 6 + f, Label = $"FX {f}" };
     }
 }

@@ -1,0 +1,148 @@
+<UserControl x:Class="WpfMixer.Views.UsbRoutingGrid"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:WpfMixer.Models"
+             xmlns:local="clr-namespace:WpfMixer.Views"
+             Background="{StaticResource BgDeep}">
+
+    <UserControl.Resources>
+        <Style x:Key="GridHeader" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+            <Setter Property="FontSize" Value="9" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="SlotLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Width" Value="44" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="4,0" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="12">
+
+            <!-- Mode selector -->
+            <Border Background="{StaticResource BgPanel}"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                    CornerRadius="2" Padding="12,8" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="USB MODE:"
+                               Foreground="{StaticResource TextSecondary}"
+                               FontFamily="{StaticResource MonoFont}" FontSize="10"
+                               VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <RadioButton Content="MULTITRACK"
+                                 IsChecked="{Binding Mixer.Usb.Mode, Converter={StaticResource EnumToBool}, ConverterParameter=Multitrack}"
+                                 Foreground="White" FontFamily="{StaticResource MonoFont}" FontSize="10"
+                                 Margin="0,0,20,0" />
+                    <RadioButton Content="STEREO"
+                                 IsChecked="{Binding Mixer.Usb.Mode, Converter={StaticResource EnumToBool}, ConverterParameter=Stereo}"
+                                 Foreground="White" FontFamily="{StaticResource MonoFont}" FontSize="10" />
+                </StackPanel>
+            </Border>
+
+            <!-- Two-column layout: sends left, returns right -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- ─── USB SENDS ─── -->
+                <StackPanel Grid.Column="0">
+                    <Border Background="{StaticResource BgPanel}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="2,2,0,0" Padding="8,5">
+                        <TextBlock Text="USB SENDS  (Channel → USB)"
+                                   Foreground="{StaticResource Accent}"
+                                   FontFamily="{StaticResource MonoFont}" FontSize="10"
+                                   FontWeight="Bold" />
+                    </Border>
+                    <ItemsControl ItemsSource="{Binding Mixer.InputChannels}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:Channel}">
+                                <Border Background="{StaticResource BgStrip}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1,0,1,1" Padding="6,4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="44" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                                   Style="{StaticResource SlotLabel}" />
+                                        <ProgressBar Grid.Column="1"
+                                                     Value="{Binding MeterLevel, Mode=OneWay}"
+                                                     Minimum="0" Maximum="1" Height="6"
+                                                     VerticalAlignment="Center"
+                                                     Foreground="{StaticResource Accent}"
+                                                     Background="#1A1A1A"
+                                                     BorderThickness="0" />
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding XAirIndex, StringFormat='USB {0:D2}'}"
+                                                   Style="{StaticResource GridHeader}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Right"
+                                                   Margin="4,0" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- ─── USB RETURNS ─── -->
+                <StackPanel Grid.Column="2">
+                    <Border Background="{StaticResource BgPanel}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="2,2,0,0" Padding="8,5">
+                        <TextBlock Text="USB RETURNS  (USB → Channel)"
+                                   Foreground="#CE93D8"
+                                   FontFamily="{StaticResource MonoFont}" FontSize="10"
+                                   FontWeight="Bold" />
+                    </Border>
+                    <ItemsControl ItemsSource="{Binding Mixer.InputChannels}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:Channel}">
+                                <Border Background="{StaticResource BgStrip}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1,0,1,1" Padding="6,4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="44" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding XAirIndex, StringFormat='USB {0:D2}'}"
+                                                   Style="{StaticResource SlotLabel}" Foreground="#CE93D8" />
+                                        <TextBlock Grid.Column="1" Text="→"
+                                                   Foreground="{StaticResource TextSecondary}"
+                                                   FontFamily="{StaticResource MonoFont}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center" />
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                                            <ComboBox Width="72" Height="22"
+                                                      SelectedItem="{Binding InputSource, Mode=TwoWay}"
+                                                      ItemsSource="{x:Static local:UsbRoutingGrid.InputSources}"
+                                                      FontFamily="{StaticResource MonoFont}" FontSize="9"
+                                                      Background="{StaticResource BgControl}"
+                                                      Foreground="{StaticResource TextSecondary}"
+                                                      BorderBrush="{StaticResource BorderBrush}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

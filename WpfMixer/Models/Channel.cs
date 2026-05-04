@@ -53,6 +53,23 @@ public class Channel : ObservableObject
     // ── FX sends (4 buses) ──────────────────────────────────────────────────
     public ObservableCollection<double> FxSends { get; set; } = [0.0, 0.0, 0.0, 0.0];
 
+    // ── Routing: input source ────────────────────────────────────────────────
+    private InputSource _inputSource = InputSource.Analog;
+    public InputSource InputSource { get => _inputSource; set => SetProperty(ref _inputSource, value); }
+
+    private int _analogInput = 1;   // 1-18
+    public int AnalogInput { get => _analogInput; set => SetProperty(ref _analogInput, Math.Clamp(value, 1, 18)); }
+
+    private int _usbReturn = 1;     // 1-18
+    public int UsbReturn { get => _usbReturn; set => SetProperty(ref _usbReturn, Math.Clamp(value, 1, 18)); }
+
+    // ── Routing: Main LR send ─────────────────────────────────────────────────
+    private bool _sendToLr = true;
+    public bool SendToLr { get => _sendToLr; set => SetProperty(ref _sendToLr, value); }
+
+    // ── Routing: Bus + FX sends (10 total: bus 1-6, fx 1-4) ─────────────────
+    public ObservableCollection<BusSend> BusSends { get; set; } = [];
+
     // ── Meter (real-time, not persisted) ─────────────────────────────────────
     [JsonIgnore] private double _meterLevel;
     [JsonIgnore]

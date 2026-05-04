@@ -123,21 +123,87 @@
                                 </Style.Triggers>
                             </Style>
                         </ScrollViewer.Style>
-                        <StackPanel Orientation="Horizontal" Margin="8,8">
-                            <!-- 18 input channel strips (ChannelViewModel) -->
-                            <ItemsControl ItemsSource="{Binding ChannelViewModels}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <views:ChannelStripControl DataContext="{Binding}" Margin="1,0"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
-                            <!-- Main LR strip -->
-                            <views:ChannelStripControl DataContext="{Binding MainLR}" Width="80" Margin="2,0"/>
+                        <StackPanel Margin="8,8">
+                            <Border Background="#FF13261B" BorderBrush="{StaticResource Accent}" BorderThickness="1" CornerRadius="4" Padding="8,5" Margin="0,0,0,8">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                                        <TextBlock Text="SOF" Foreground="{StaticResource Accent}" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <Button Content="BUS 1" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="1" Margin="0,0,4,0"/>
+                                        <Button Content="BUS 2" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="2" Margin="0,0,4,0"/>
+                                        <Button Content="BUS 3" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="3" Margin="0,0,4,0"/>
+                                        <Button Content="BUS 4" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="4" Margin="0,0,4,0"/>
+                                        <Button Content="BUS 5" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="5" Margin="0,0,4,0"/>
+                                        <Button Content="BUS 6" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="6" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{Binding SelectedSofBusIndex, StringFormat=Bus {0}}" Foreground="{StaticResource Accent}" FontFamily="{StaticResource MonoFont}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                        <Button Content="ENTER SOF" Style="{StaticResource PtButton}" Command="{Binding BusMix.EnterSofCommand}" Margin="0,0,4,0"/>
+                                        <Button Content="EXIT SOF" Style="{StaticResource PtButton}" Command="{Binding BusMix.ExitSofCommand}"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+
+                            <Grid>
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSofActive}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <StackPanel Orientation="Horizontal">
+                                    <!-- 18 input channel strips (ChannelViewModel) -->
+                                    <ItemsControl ItemsSource="{Binding ChannelViewModels}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <views:ChannelStripControl DataContext="{Binding}" Margin="1,0"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
+                                    <!-- Main LR strip -->
+                                    <views:ChannelStripControl DataContext="{Binding MainLR}" Width="80" Margin="2,0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSofActive}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <StackPanel Orientation="Horizontal">
+                                    <ItemsControl ItemsSource="{Binding BusMix.ChannelSends}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <views:BusSendStripControl Margin="1,0"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
+                                    <Border Background="{StaticResource BgStrip}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Width="92" Margin="2,0" Padding="8">
+                                        <StackPanel>
+                                            <TextBlock Text="BUS MASTER" HorizontalAlignment="Center" FontFamily="{StaticResource MonoFont}" FontWeight="Bold"/>
+                                            <Slider Style="{StaticResource VerticalFader}" Value="{Binding BusMix.BusMasterLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <ToggleButton IsChecked="{Binding BusMix.BusMasterMute, Mode=TwoWay}" Content="MUTE" Margin="0,6,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -178,6 +244,16 @@
             <!-- ─── FX RACK TAB ─── -->
             <TabItem Header="FX RACK">
                 <views:FxRackView DataContext="{Binding FxRack}" />
+            </TabItem>
+
+            <!-- ─── BUS MIX TAB ─── -->
+            <TabItem Header="BUS MIX">
+                <views:BusMixView DataContext="{Binding BusMix}" />
+            </TabItem>
+
+            <!-- ─── MONITOR MIX TAB ─── -->
+            <TabItem Header="MONITOR MIX">
+                <views:MonitorMixView DataContext="{Binding MonitorMix}" />
             </TabItem>
 
             <!-- ─── ROUTING TAB ─── -->

@@ -40,6 +40,12 @@ public class MixerModel : ObservableObject
     /// <summary>USB routing configuration.</summary>
     public UsbConfig Usb { get; set; } = new();
 
+    /// <summary>Bus 1-6 send-on-faders state and bus masters.</summary>
+    public ObservableCollection<BusMixModel> BusMixModels { get; set; } = [];
+
+    /// <summary>FX return 1-4 mix state.</summary>
+    public ObservableCollection<FxReturnMixModel> FxReturnMixModels { get; set; } = [];
+
     /// <summary>Aggregate output routing model.</summary>
     public OutputRoutingModel OutputRoutingModel { get; set; } = new();
 
@@ -112,6 +118,12 @@ public class MixerModel : ObservableObject
         model.UsbRoutingModel.Mode = model.Usb.Mode;
         model.UsbRoutingModel.SendAssignments = model.Usb.SendAssignments;
         model.UsbRoutingModel.ReturnAssignments = model.Usb.ReturnAssignments;
+
+        for (int b = 1; b <= 6; b++)
+            model.BusMixModels.Add(new BusMixModel(b, 18));
+
+        for (int f = 1; f <= 4; f++)
+            model.FxReturnMixModels.Add(new FxReturnMixModel(f, 18));
 
         return model;
     }

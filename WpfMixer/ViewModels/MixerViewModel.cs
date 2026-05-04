@@ -23,6 +23,11 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     public MainBusViewModel MainLR { get; }
     public FxRackViewModel FxRack { get; }
     [ObservableProperty] private RoutingViewModel _routing;
+    [ObservableProperty] private BusMixViewModel _busMix;
+    [ObservableProperty] private MonitorMixViewModel _monitorMix;
+
+    public bool IsSofActive => BusMix.IsSofActive;
+    public int SelectedSofBusIndex => BusMix.SelectedBusIndex;
 
     // ── Routing / scene model (used by routing panel & scene save) ────────────
     [ObservableProperty] private MixerModel _mixer = MixerModel.CreateDefault();
@@ -50,6 +55,9 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         MainLR = new MainBusViewModel(new MainBusModel(), _osc);
         FxRack = new FxRackViewModel(Mixer, _osc);
         _routing = new RoutingViewModel(Mixer, _osc);
+        _busMix = new BusMixViewModel(Mixer, _osc);
+        _monitorMix = new MonitorMixViewModel(_busMix);
+        WireBusMix(_busMix);
 
         // ── Keyboard / routing (uses legacy Channel model) ───────────────────
         KeyboardService = new KeyboardService();
@@ -125,6 +133,10 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
             // ── FX rack ──────────────────────────────────────────────────────
             if (FxRack.ApplyOscMessage(address, args))
+                return;
+
+            // ── Bus mix / monitor mix ───────────────────────────────────────
+            if (BusMix.ApplyOscMessage(address, args))
                 return;
 
             // ── Dedicated routing VMs (output/USB matrix) ───────────────────
@@ -213,6 +225,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         _osc.Send($"{MainBusModel.OscBase}/mix/on");
         // FX rack
         FxRack.RequestState();
+        // Bus mix + monitor state
+        BusMix.RequestState();
         // Legacy routing model channels
         foreach (var ch in Mixer.AllChannels)
         {
@@ -521,9 +535,14 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         if (loaded == null) return;
         Mixer = loaded;
         Routing = new RoutingViewModel(Mixer, _osc);
+        BusMix = new BusMixViewModel(Mixer, _osc);
+        MonitorMix = new MonitorMixViewModel(BusMix);
+        WireBusMix(BusMix);
         FxRack.RebindModels(Mixer);
         OnPropertyChanged(nameof(Channels));
         OnPropertyChanged(nameof(MuteGroups));
+        OnPropertyChanged(nameof(IsSofActive));
+        OnPropertyChanged(nameof(SelectedSofBusIndex));
         RebindKeyboard();
     }
 
@@ -545,6 +564,15 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     private void RebindKeyboard()
     {
         KeyboardService.Bind(Mixer.InputChannels, Mixer.MuteGroups);
+    }
+
+    private void WireBusMix(BusMixViewModel busMix)
+    {
+        busMix.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(BusMixViewModel.IsSofActive)) OnPropertyChanged(nameof(IsSofActive));
+            if (e.PropertyName == nameof(BusMixViewModel.SelectedBusIndex)) OnPropertyChanged(nameof(SelectedSofBusIndex));
+        };
     }
 
     private void OnKeyActionFired(string key, string description)

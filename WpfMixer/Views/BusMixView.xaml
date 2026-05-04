@@ -1,0 +1,101 @@
+<UserControl x:Class="WpfMixer.Views.BusMixView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:WpfMixer.Views"
+             Background="{StaticResource BgDeep}">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{StaticResource BgPanel}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="8,6">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <TextBlock Text="BUS MIX" Foreground="White" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" Margin="0,0,10,0"/>
+                    <ItemsControl ItemsSource="{Binding BusMixModels}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding BusIndex, StringFormat=BUS {0}}"
+                                        Style="{StaticResource PtButton}"
+                                        Margin="0,0,4,0"
+                                        Command="{Binding DataContext.SelectBusCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding BusIndex}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Border Background="#FF123025" BorderBrush="{StaticResource Accent}" BorderThickness="1" CornerRadius="3" Padding="8,3" Margin="0,0,8,0">
+                        <TextBlock Text="{Binding SelectedBusIndex, StringFormat=SOF BUS {0}}" Foreground="{StaticResource Accent}" FontFamily="{StaticResource MonoFont}" FontSize="10"/>
+                    </Border>
+                    <ToggleButton IsChecked="{Binding IsSofActive, Mode=TwoWay}" Content="SOF ACTIVE"
+                                  FontFamily="{StaticResource MonoFont}" FontWeight="Bold"
+                                  Background="#FF1A2A1A" BorderBrush="{StaticResource Accent}"
+                                  Foreground="{StaticResource Accent}" Padding="8,3"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="0,8,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="110"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding ChannelSends}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <views:BusSendStripControl Margin="2,0"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <Border Grid.Column="1" Margin="8,0,0,0" Background="{StaticResource BgStrip}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="3" Padding="8">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="BUS MASTER" HorizontalAlignment="Center" Foreground="White" FontFamily="{StaticResource MonoFont}" FontWeight="Bold"/>
+                    <Slider Grid.Row="1" Style="{StaticResource VerticalFader}" Value="{Binding BusMasterLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center"/>
+                    <Button Grid.Row="2" Content="MUTE" Style="{StaticResource MuteButton}" Click="BusMute_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2" Background="{StaticResource BgPanel}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="8,6">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="FX RETURNS" Foreground="#FFCE93D8" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" Margin="0,0,8,0"/>
+                <ItemsControl ItemsSource="{Binding FxReturnMixSlots}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#FF1A1A1A" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Margin="0,0,6,0" Padding="6,4" CornerRadius="3">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding FxIndex, StringFormat=FX {0}}" Foreground="#FFCE93D8" FontFamily="{StaticResource MonoFont}" Margin="0,0,6,0"/>
+                                    <Slider Width="80" Minimum="0" Maximum="1" Value="{Binding Level, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <ToggleButton IsChecked="{Binding Mute, Mode=TwoWay}" Content="M"
+                                                  Margin="6,0,0,0" Width="24"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

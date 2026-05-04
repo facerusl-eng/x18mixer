@@ -62,6 +62,7 @@
                               ItemsSource="{Binding TransitionOptions}"
                               DisplayMemberPath="Label"
                               SelectedItem="{Binding SelectedTransition, Mode=TwoWay}"
+                              ToolTip="Scene load behavior&#10;Smooth: fader, pan, sends, FX parameters&#10;Instant: mute, routing, source, FX type"
                               Margin="0,0,8,0"/>
                     <Button Grid.Column="3" Content="Save Scene" Style="{StaticResource PtButton}" Command="{Binding SaveSceneCommand}" Margin="0,0,6,0"/>
                     <Button Grid.Column="4" Content="Load Scene" Style="{StaticResource PtButton}" Command="{Binding LoadSceneCommand}" Margin="0,0,6,0"/>

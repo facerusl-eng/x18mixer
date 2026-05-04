@@ -210,14 +210,26 @@
                                     BorderThickness="{TemplateBinding BorderThickness}"
                                     CornerRadius="{DynamicResource RadiusSmall}"
                                     Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Grid>
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <!-- 3D specular sheen: bright top, shadow bottom -->
+                                    <Rectangle IsHitTestVisible="False" Opacity="0.14" RadiusX="4" RadiusY="4">
+                                        <Rectangle.Fill>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                <GradientStop Color="White" Offset="0"/>
+                                                <GradientStop Color="Transparent" Offset="0.5"/>
+                                                <GradientStop Color="Black" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Grid>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource BgHover}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource BgPressColor}"/>
+                                    <Setter TargetName="border" Property="Background" Value="{DynamicResource BgPress}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -269,10 +281,19 @@
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <!-- Track -->
-                                <Border Grid.Row="1" Width="4" HorizontalAlignment="Center"
-                                        Background="{DynamicResource FaderTrackBrush}"
-                                        CornerRadius="2"/>
+                                <!-- Track groove -->
+                                <Border Grid.Row="1" Width="6" HorizontalAlignment="Center" CornerRadius="3">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#FF050318" Offset="0"/>
+                                            <GradientStop Color="#FF180F2C" Offset="0.5"/>
+                                            <GradientStop Color="#FF050318" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Border.Effect>
+                                        <DropShadowEffect Color="#FF6644FF" ShadowDepth="0" BlurRadius="4" Opacity="0.5"/>
+                                    </Border.Effect>
+                                </Border>
                                 <!-- Unity mark -->
                                 <Border Grid.Row="1" Width="10" Height="2"
                                         Background="#FF555555" HorizontalAlignment="Center"
@@ -286,18 +307,34 @@
                                         <Thumb x:Name="thumb">
                                             <Thumb.Template>
                                                 <ControlTemplate TargetType="Thumb">
-                                                    <Border Width="36" Height="14" CornerRadius="2">
+                                                    <Border Width="36" Height="14" CornerRadius="3">
                                                         <Border.Background>
                                                             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                                <GradientStop Color="#FFD0D0D0" Offset="0"/>
-                                                                <GradientStop Color="#FF888888" Offset="0.5"/>
-                                                                <GradientStop Color="#FFAAAAAA" Offset="1"/>
+                                                                <GradientStop Color="#FF9CF0FF" Offset="0"/>
+                                                                <GradientStop Color="#FF00C2FF" Offset="0.45"/>
+                                                                <GradientStop Color="#FF007AAA" Offset="1"/>
                                                             </LinearGradientBrush>
                                                         </Border.Background>
-                                                        <Border Height="2" Width="24"
-                                                                Background="#FF333333"
-                                                                HorizontalAlignment="Center"
-                                                                VerticalAlignment="Center"/>
+                                                        <Border.Effect>
+                                                            <DropShadowEffect Color="#FF00C2FF" ShadowDepth="0" BlurRadius="10" Opacity="0.9"/>
+                                                        </Border.Effect>
+                                                        <Grid>
+                                                            <!-- Grip lines -->
+                                                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                <Border Height="1" Width="22" Background="#55000000" Margin="0,1"/>
+                                                                <Border Height="1" Width="22" Background="#55000000" Margin="0,1"/>
+                                                                <Border Height="1" Width="22" Background="#55000000" Margin="0,1"/>
+                                                            </StackPanel>
+                                                            <!-- Specular highlight -->
+                                                            <Border VerticalAlignment="Top" Margin="3,2,3,0" Height="4" CornerRadius="2,2,0,0">
+                                                                <Border.Background>
+                                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                                        <GradientStop Color="#88FFFFFF" Offset="0"/>
+                                                                        <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                                                    </LinearGradientBrush>
+                                                                </Border.Background>
+                                                            </Border>
+                                                        </Grid>
                                                     </Border>
                                                 </ControlTemplate>
                                             </Thumb.Template>
@@ -338,14 +375,20 @@
                                         <Thumb>
                                             <Thumb.Template>
                                                 <ControlTemplate TargetType="Thumb">
-                                                    <Ellipse Width="12" Height="12">
-                                                        <Ellipse.Fill>
-                                                            <RadialGradientBrush>
-                                                                <GradientStop Color="#FFE0E0E0" Offset="0"/>
-                                                                <GradientStop Color="#FF888888" Offset="1"/>
-                                                            </RadialGradientBrush>
-                                                        </Ellipse.Fill>
-                                                    </Ellipse>
+                                                    <Grid Width="13" Height="13">
+                                                        <Ellipse>
+                                                            <Ellipse.Fill>
+                                                                <RadialGradientBrush GradientOrigin="0.35,0.3">
+                                                                    <GradientStop Color="#FFCCF8FF" Offset="0"/>
+                                                                    <GradientStop Color="#FF00C2FF" Offset="0.55"/>
+                                                                    <GradientStop Color="#FF006688" Offset="1"/>
+                                                                </RadialGradientBrush>
+                                                            </Ellipse.Fill>
+                                                            <Ellipse.Effect>
+                                                                <DropShadowEffect Color="#FF00C2FF" ShadowDepth="0" BlurRadius="7" Opacity="0.85"/>
+                                                            </Ellipse.Effect>
+                                                        </Ellipse>
+                                                    </Grid>
                                                 </ControlTemplate>
                                             </Thumb.Template>
                                         </Thumb>

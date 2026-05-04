@@ -17,8 +17,17 @@
     <!-- Outer: selection highlight border -->
     <Border x:Name="StripOuter"
             BorderThickness="1"
-            BorderBrush="{Binding IsSelected, Converter={StaticResource SelectBorder}}"
-            Background="#FF141414">
+            BorderBrush="{Binding IsSelected, Converter={StaticResource SelectBorder}}">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#FF1C1530" Offset="0"/>
+                <GradientStop Color="#FF100A1D" Offset="0.45"/>
+                <GradientStop Color="#FF05040B" Offset="1"/>
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.Effect>
+            <DropShadowEffect Color="#88A259FF" ShadowDepth="0" BlurRadius="12" Opacity="0.45"/>
+        </Border.Effect>
 
         <Grid>
             <Grid.RowDefinitions>
@@ -60,35 +69,92 @@
             </Grid>
 
             <!-- ── Row 2: Gate mini-display ── -->
-            <Border Grid.Row="2" Background="#FF0A0F0A"
-                    BorderBrush="#FF1A2A1A" BorderThickness="0,1,0,1" Margin="2,0">
-                <Canvas x:Name="GateCanvas" ClipToBounds="True">
-                    <!-- Painted in code-behind on SizeChanged; static placeholder line -->
-                    <Line X1="0" Y1="11" X2="25" Y2="11" Stroke="#FF1E4D1E" StrokeThickness="1"/>
-                    <Line X1="25" Y1="11" X2="30" Y2="2" Stroke="#FF2ECC40" StrokeThickness="1.5"/>
-                    <Line X1="30" Y1="2" X2="35" Y2="11" Stroke="#FF2ECC40" StrokeThickness="1.5"/>
-                    <Line X1="35" Y1="11" X2="100" Y2="11" Stroke="#FF1E4D1E" StrokeThickness="1"/>
-                </Canvas>
+            <Border Grid.Row="2" BorderBrush="#FF2A4A2A" BorderThickness="0,1,0,1" Margin="2,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#FF030E06" Offset="0"/>
+                        <GradientStop Color="#FF0A1A0E" Offset="0.5"/>
+                        <GradientStop Color="#FF030E06" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Canvas x:Name="GateCanvas" ClipToBounds="True">
+                        <!-- Painted in code-behind on SizeChanged; static placeholder line -->
+                        <Line X1="0" Y1="11" X2="25" Y2="11" Stroke="#FF1E4D1E" StrokeThickness="1"/>
+                        <Line X1="25" Y1="11" X2="30" Y2="2" Stroke="#FF2ECC40" StrokeThickness="1.5"/>
+                        <Line X1="30" Y1="2" X2="35" Y2="11" Stroke="#FF2ECC40" StrokeThickness="1.5"/>
+                        <Line X1="35" Y1="11" X2="100" Y2="11" Stroke="#FF1E4D1E" StrokeThickness="1"/>
+                    </Canvas>
+                    <!-- Inset screen shadow overlay -->
+                    <Rectangle IsHitTestVisible="False">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#99000000" Offset="0"/>
+                                <GradientStop Color="#00000000" Offset="0.3"/>
+                                <GradientStop Color="#00000000" Offset="0.7"/>
+                                <GradientStop Color="#99000000" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </Grid>
             </Border>
 
             <!-- ── Row 3: EQ mini-display ── -->
-            <Border Grid.Row="3" Background="#FF0A0A14"
-                    BorderBrush="#FF1A1A2A" BorderThickness="0,0,0,1" Margin="2,0">
-                <Canvas x:Name="EqCanvas" ClipToBounds="True">
-                    <!-- Static EQ curve placeholder -->
-                    <Polyline Points="0,14 8,14 14,10 22,8 30,12 42,9 54,13 66,14"
-                              Stroke="#FF3A5FBF" StrokeThickness="1.5" Fill="Transparent"/>
-                </Canvas>
+            <Border Grid.Row="3" BorderBrush="#FF1A1A3A" BorderThickness="0,0,0,1" Margin="2,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#FF03030E" Offset="0"/>
+                        <GradientStop Color="#FF0A0A1C" Offset="0.5"/>
+                        <GradientStop Color="#FF03030E" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Canvas x:Name="EqCanvas" ClipToBounds="True">
+                        <!-- Static EQ curve placeholder -->
+                        <Polyline Points="0,14 8,14 14,10 22,8 30,12 42,9 54,13 66,14"
+                                  Stroke="#FF3A5FBF" StrokeThickness="1.5" Fill="Transparent"/>
+                    </Canvas>
+                    <!-- Inset screen shadow overlay -->
+                    <Rectangle IsHitTestVisible="False">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#99000000" Offset="0"/>
+                                <GradientStop Color="#00000000" Offset="0.3"/>
+                                <GradientStop Color="#00000000" Offset="0.7"/>
+                                <GradientStop Color="#99000000" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </Grid>
             </Border>
 
             <!-- ── Row 4: Comp mini-display ── -->
-            <Border Grid.Row="4" Background="#FF14100A"
-                    BorderBrush="#FF2A1A0A" BorderThickness="0,0,0,1" Margin="2,0">
-                <Canvas x:Name="CompCanvas" ClipToBounds="True">
-                    <!-- Static comp transfer curve placeholder -->
-                    <Polyline Points="0,20 12,12 24,7 40,5 66,4"
-                              Stroke="#FFCC8800" StrokeThickness="1.5" Fill="Transparent"/>
-                </Canvas>
+            <Border Grid.Row="4" BorderBrush="#FF3A2A0A" BorderThickness="0,0,0,1" Margin="2,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#FF0E0803" Offset="0"/>
+                        <GradientStop Color="#FF1A100A" Offset="0.5"/>
+                        <GradientStop Color="#FF0E0803" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Canvas x:Name="CompCanvas" ClipToBounds="True">
+                        <!-- Static comp transfer curve placeholder -->
+                        <Polyline Points="0,20 12,12 24,7 40,5 66,4"
+                                  Stroke="#FFCC8800" StrokeThickness="1.5" Fill="Transparent"/>
+                    </Canvas>
+                    <!-- Inset screen shadow overlay -->
+                    <Rectangle IsHitTestVisible="False">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#99000000" Offset="0"/>
+                                <GradientStop Color="#00000000" Offset="0.3"/>
+                                <GradientStop Color="#00000000" Offset="0.7"/>
+                                <GradientStop Color="#99000000" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </Grid>
             </Border>
 
             <!-- ── Row 5: Sends level indicator ── -->

@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using WpfMixer.Core.Interfaces;
+using WpfMixer.Core.Models;
 using WpfMixer.Models;
 using WpfMixer.Services;
 
@@ -20,6 +21,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     private readonly SettingsService _settingsService;
     private readonly IMixerSyncService _mixerSyncService;
     private readonly ILoggingService _logging;
+    private readonly IEventBus _eventBus;
     private readonly SceneTransitionService _sceneTransition;
     public readonly KeyboardService KeyboardService;
 
@@ -39,6 +41,11 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private PerformanceViewModel _performance;
     [ObservableProperty] private RemoteControlViewModel _remoteControl;
     [ObservableProperty] private AppearanceViewModel _appearance;
+    [ObservableProperty] private PluginsViewModel _pluginsFeature;
+    [ObservableProperty] private ScriptingViewModel _scriptingFeature;
+    [ObservableProperty] private AutomationViewModel _automationFeature;
+    [ObservableProperty] private MacrosViewModel _macrosFeature;
+    [ObservableProperty] private AdvancedSettingsViewModel _advancedSettingsFeature;
 
     public bool IsSofActive => BusMix.IsSofActive;
     public int SelectedSofBusIndex => BusMix.SelectedBusIndex;
@@ -69,7 +76,13 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         KeyboardService keyboardService,
         SettingsService settingsService,
         IMixerSyncService mixerSyncService,
-        ILoggingService logging)
+        ILoggingService logging,
+        IEventBus eventBus,
+        PluginsViewModel pluginsFeature,
+        ScriptingViewModel scriptingFeature,
+        AutomationViewModel automationFeature,
+        MacrosViewModel macrosFeature,
+        AdvancedSettingsViewModel advancedSettingsFeature)
     {
         _osc = osc;
         _discovery = discovery;
@@ -79,6 +92,12 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         _settingsService = settingsService;
         _mixerSyncService = mixerSyncService;
         _logging = logging;
+        _eventBus = eventBus;
+        _pluginsFeature = pluginsFeature;
+        _scriptingFeature = scriptingFeature;
+        _automationFeature = automationFeature;
+        _macrosFeature = macrosFeature;
+        _advancedSettingsFeature = advancedSettingsFeature;
 
         _sceneTransition = new SceneTransitionService(_osc);
 
@@ -243,6 +262,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
             IsConnected = true;
             StatusText = $"Connected to {ip}";
             _logging.LogInfo($"Connected to mixer {ip}");
+            _eventBus.Publish(new MixerConnectedEvent(ip));
             _mixerSyncService.UpdateConnectionHint(ip);
             await _mixerSyncService.OnConnectedAsync(ip);
 
@@ -267,6 +287,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         IsConnected = false;
         StatusText = "Disconnected";
         _mixerSyncService.OnDisconnected();
+        _eventBus.Publish(new MixerDisconnectedEvent());
         _logging.LogWarning("Disconnected from mixer");
     }
 
@@ -635,6 +656,45 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         app.LastScenePath = scenePath;
         _settingsService.SaveAppSettings(app);
         _logging.LogInfo($"Scene loaded: {scenePath}");
+        _eventBus.Publish(new SceneLoadedEvent(Path.GetFileNameWithoutExtension(scenePath)));
+    }
+
+    // ── Public API helpers ────────────────────────────────────────────────
+    public object GetPublicState()
+    {
+        return new
+        {
+            connected = IsConnected,
+            mixerIp = MixerIpInput,
+            status = StatusText,
+            channels = ChannelViewModels.Select(ch => new
+            {
+                index = ch.Index,
+                name = ch.Name,
+                fader = ch.FaderLevel,
+                muted = ch.IsMuted,
+                pan = ch.Pan,
+            }).ToList(),
+            remoteClients = RemoteControl.ConnectedClients,
+        };
+    }
+
+    public void SetChannelFader(int channelIndex, float value)
+    {
+        var vm = ChannelViewModels.FirstOrDefault(c => c.Index == channelIndex);
+        if (vm is null) return;
+        vm.FaderLevel = Math.Clamp(value, 0f, 1f);
+        _eventBus.Publish(new FaderMovedEvent(channelIndex, vm.FaderLevel));
+        _eventBus.Publish(new ChannelChangedEvent(channelIndex, nameof(ChannelViewModel.FaderLevel), vm.FaderLevel));
+    }
+
+    public void SetChannelMute(int channelIndex, bool isMuted)
+    {
+        var vm = ChannelViewModels.FirstOrDefault(c => c.Index == channelIndex);
+        if (vm is null) return;
+        vm.IsMuted = isMuted;
+        _eventBus.Publish(new MuteChangedEvent(channelIndex, vm.IsMuted));
+        _eventBus.Publish(new ChannelChangedEvent(channelIndex, nameof(ChannelViewModel.IsMuted), vm.IsMuted));
     }
 
     [RelayCommand]

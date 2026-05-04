@@ -22,12 +22,24 @@ public static class ServiceRegistration
 
         services.AddSingleton<ISettingsService>(sp => sp.GetRequiredService<SettingsService>());
         services.AddSingleton<IMixerSyncService, MixerSyncService>();
+        services.AddSingleton<IEventBus, EventBus>();
+        services.AddSingleton<IModuleManager, ModuleManager>();
+        services.AddSingleton<IPluginHostService, PluginHostService>();
+        services.AddSingleton<IScriptingEngineService, ScriptingEngineService>();
+        services.AddSingleton<IAutomationEngineService, AutomationEngineService>();
+        services.AddSingleton<IMacroService, MacroService>();
+        services.AddSingleton<ILocalApiService, LocalApiService>();
 
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IAppLifecycleService, AppLifecycleService>();
 
         services.AddSingleton<MixerViewModel>();
         services.AddTransient<MainViewModel>();
+        services.AddSingleton<PluginsViewModel>();
+        services.AddSingleton<ScriptingViewModel>();
+        services.AddSingleton<AutomationViewModel>();
+        services.AddSingleton<MacrosViewModel>();
+        services.AddSingleton<AdvancedSettingsViewModel>();
         services.AddSingleton(sp => sp.GetRequiredService<MixerViewModel>().Appearance);
         services.AddSingleton(sp => sp.GetRequiredService<MixerViewModel>().Routing);
         services.AddSingleton(sp => sp.GetRequiredService<MixerViewModel>().BusMix);

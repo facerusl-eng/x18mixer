@@ -265,6 +265,26 @@
                     <views:AppearancePanel DataContext="{Binding Appearance}"/>
                 </TabItem>
 
+                <TabItem Header="PLUGINS">
+                    <views:PluginsPanel DataContext="{Binding PluginsFeature}"/>
+                </TabItem>
+
+                <TabItem Header="SCRIPTING">
+                    <views:ScriptingPanel DataContext="{Binding ScriptingFeature}"/>
+                </TabItem>
+
+                <TabItem Header="AUTOMATION">
+                    <views:AutomationPanel DataContext="{Binding AutomationFeature}"/>
+                </TabItem>
+
+                <TabItem Header="MACROS">
+                    <views:MacrosPanel DataContext="{Binding MacrosFeature}"/>
+                </TabItem>
+
+                <TabItem Header="ADVANCED">
+                    <views:AdvancedSettingsPanel DataContext="{Binding AdvancedSettingsFeature}"/>
+                </TabItem>
+
         </TabControl>
 
         <views:PerformanceView Grid.Row="1" DataContext="{Binding Performance}">

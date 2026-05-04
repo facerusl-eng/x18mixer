@@ -80,7 +80,7 @@
 
                 <Slider Grid.Column="0"
                         Style="{StaticResource VerticalFader}"
-                        Value="{Binding Volume}"
+                        Value="{Binding FaderLevel}"
                         HorizontalAlignment="Center"/>
 
                 <views:LedMeterControl Grid.Column="1"
@@ -91,7 +91,7 @@
             <!-- ── Row 4: dB readout ── -->
             <Border Grid.Row="4" Background="#FF111111"
                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
-                <TextBlock Text="{Binding Volume, Converter={StaticResource DbLabel}}"
+                <TextBlock Text="{Binding FaderLevel, Converter={StaticResource DbLabel}}"
                            FontFamily="{StaticResource MonoFont}" FontSize="11"
                            Foreground="#FF00C853"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -114,7 +114,7 @@
 
                 <!-- SOLO -->
                 <Button Grid.Column="1" Content="S" Margin="1,0"
-                        Background="{Binding IsSoloed, Converter={StaticResource SoloColor}}"
+                        Background="{Binding IsSolo, Converter={StaticResource SoloColor}}"
                         Foreground="#FFFFA000"
                         Style="{StaticResource SoloButton}"
                         Click="Solo_Click" FontSize="10" FontWeight="Bold" Padding="0"/>

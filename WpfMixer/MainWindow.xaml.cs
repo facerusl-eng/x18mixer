@@ -13,8 +13,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = _vm;
-        // Auto-discover on launch
-        _ = _vm.DiscoverCommand.ExecuteAsync(null);
+        // Auto-discover and connect on launch
+        _ = _vm.InitializeAsync();
     }
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)

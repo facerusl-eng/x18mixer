@@ -16,10 +16,13 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     private readonly SceneService _sceneService = new();
     public readonly KeyboardService KeyboardService;
 
-    private System.Timers.Timer? _heartbeatTimer;
     private System.Timers.Timer? _overlayTimer;
 
-    // ── Model ────────────────────────────────────────────────────────────────
+    // ── Core mixer model / viewmodels (clean MVVM layer) ──────────────────────
+    public ObservableCollection<ChannelViewModel> ChannelViewModels { get; } = [];
+    public MainBusViewModel MainLR { get; }
+
+    // ── Routing / scene model (used by routing panel & scene save) ────────────
     [ObservableProperty] private MixerModel _mixer = MixerModel.CreateDefault();
     [ObservableProperty] private bool _isConnected;
     [ObservableProperty] private string _statusText = "Not connected";
@@ -30,29 +33,100 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _isPanicMuted;
     [ObservableProperty] private string _mixerIpInput = string.Empty;
     [ObservableProperty] private ObservableCollection<string> _discoveredMixers = [];
+    [ObservableProperty] private string _logText = string.Empty;
 
+    /// <summary>Legacy alias kept for routing panel bindings.</summary>
     public ObservableCollection<Channel> Channels => Mixer.InputChannels;
     public ObservableCollection<MuteGroup> MuteGroups => Mixer.MuteGroups;
 
     // ── Constructor ──────────────────────────────────────────────────────────
     public MixerViewModel()
     {
+        // ── Core ChannelViewModels (18 channels + main LR) ───────────────────
+        foreach (var model in ChannelModel.CreateDefaults())
+            ChannelViewModels.Add(new ChannelViewModel(model, _osc));
+        MainLR = new MainBusViewModel(new MainBusModel(), _osc);
+
+        // ── Keyboard / routing (uses legacy Channel model) ───────────────────
         KeyboardService = new KeyboardService();
         KeyboardService.Bind(Mixer.InputChannels, Mixer.MuteGroups);
         KeyboardService.KeyActionFired += OnKeyActionFired;
 
+        // ── OSC events ───────────────────────────────────────────────────────
         _osc.MessageReceived += OnOscMessage;
+        _osc.OnLog += msg => Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            LogText = msg;
+        });
 
-        // Wire channel property changes → OSC sends
+        // Wire routing-model property changes → OSC (legacy)
         foreach (var ch in Mixer.AllChannels)
             WireChannel(ch);
-
         foreach (var output in Mixer.Outputs)
             WireOutput(output);
 
         Mixer.InputChannels.CollectionChanged += (_, _) => RebindKeyboard();
         Mixer.MuteGroups.CollectionChanged    += (_, _) => RebindKeyboard();
     }
+
+    // ── InitializeAsync: discover → connect → request state ──────────────────
+
+    public async Task InitializeAsync()
+    {
+        StatusText = "Starting auto-discovery…";
+
+        string? foundIp = null;
+        _discovery.MixerFound += (ip, name, model) =>
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                foundIp = ip;
+                var entry = $"{name} ({model}) @ {ip}";
+                if (!DiscoveredMixers.Contains(entry)) DiscoveredMixers.Add(entry);
+                StatusText = $"Found: {entry} — connecting…";
+                if (DiscoveredMixers.Count == 1)
+                    _ = ConnectToAsync(ip);
+            });
+        };
+
+        await _discovery.DiscoverAsync(3000);
+        IsDiscovering = false;
+
+        if (foundIp == null)
+            StatusText = "No X Air mixer found. Enter IP manually.";
+    }
+
+    /// <summary>
+    /// Route an incoming OSC message to the correct ChannelViewModel or MainBus.
+    /// Called on any thread; dispatches to UI thread internally.
+    /// </summary>
+    public void HandleOscMessage(string address, object[] args)
+    {
+        Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            // ── Core channel VMs ─────────────────────────────────────────────
+            foreach (var vm in ChannelViewModels)
+            {
+                if (address.StartsWith(vm.OscBase))
+                {
+                    vm.ApplyOscMessage(address, args);
+                    return;
+                }
+            }
+
+            // ── Main LR ──────────────────────────────────────────────────────
+            if (address.StartsWith(MainBusModel.OscBase))
+            {
+                MainLR.ApplyOscMessage(address, args);
+                return;
+            }
+
+            // ── Routing / output model (legacy) ──────────────────────────────
+            HandleRoutingOsc(address, args);
+        });
+    }
+
+
 
     // ── Discovery ────────────────────────────────────────────────────────────
 
@@ -93,11 +167,10 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     {
         try
         {
-            await _osc.ConnectAsync(ip);
+            await _osc.ConnectAsync(ip);   // heartbeat is started inside ConnectAsync
             Mixer.MixerIp = ip;
             IsConnected = true;
             StatusText = $"Connected to {ip}";
-            StartHeartbeat();
             RequestFullState();
             RequestRoutingState();
         }
@@ -110,31 +183,27 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void Disconnect()
     {
-        _heartbeatTimer?.Stop();
-        _osc.Disconnect();
+        _osc.Disconnect();   // stops heartbeat internally
         IsConnected = false;
         StatusText = "Disconnected";
     }
 
-    // ── OSC heartbeat ────────────────────────────────────────────────────────
-
-    private void StartHeartbeat()
-    {
-        _heartbeatTimer?.Stop();
-        _heartbeatTimer = new System.Timers.Timer(5000) { AutoReset = true };
-        _heartbeatTimer.Elapsed += (_, _) => _osc.Send("/xremote");
-        _heartbeatTimer.Start();
-    }
-
     private void RequestFullState()
     {
-        // Ask mixer to dump all fader/mute values
-        _osc.Send("/xremote");
+        // Request state for core channel VMs
+        foreach (var vm in ChannelViewModels)
+        {
+            _osc.Send($"{vm.OscBase}/mix/fader");
+            _osc.Send($"{vm.OscBase}/mix/on");
+            _osc.Send($"{vm.OscBase}/mix/pan");
+            _osc.Send($"{vm.OscBase}/config/name");
+        }
+        // Main LR
+        _osc.Send($"{MainBusModel.OscBase}/mix/fader");
+        _osc.Send($"{MainBusModel.OscBase}/mix/on");
+        // Legacy routing model channels
         foreach (var ch in Mixer.AllChannels)
         {
-            _osc.Send($"{ch.OscBase}/mix/fader");
-            _osc.Send($"{ch.OscBase}/mix/on");
-            _osc.Send($"{ch.OscBase}/mix/pan");
             _osc.Send($"{ch.OscBase}/config/name");
         }
     }
@@ -143,40 +212,42 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
     private void OnOscMessage(string address, object[] args)
     {
-        Application.Current.Dispatcher.InvokeAsync(() =>
+        // Delegate to the unified handler (routes to ChannelViewModel + legacy routing)
+        HandleOscMessage(address, args);
+    }
+
+    private void HandleRoutingOsc(string address, object[] args)
+    {
+        // Channel fader / mute / pan in legacy routing model
+        var ch = FindChannelByOscAddress(address);
+        if (ch != null)
         {
-            // Channel fader / mute / pan / name / routing
-            var ch = FindChannelByOscAddress(address);
-            if (ch != null)
-            {
-                if (address.EndsWith("/mix/fader") && args.Length > 0 && args[0] is float f)
-                    ch.Volume = f;
-                else if (address.EndsWith("/mix/on") && args.Length > 0 && args[0] is int on)
-                    ch.IsMuted = on == 0;
-                else if (address.EndsWith("/mix/pan") && args.Length > 0 && args[0] is float p)
-                    ch.Pan = p;
-                else if (address.EndsWith("/config/name") && args.Length > 0 && args[0] is string name)
-                    ch.Name = name;
-                else if (address.EndsWith("/mix/lr") && args.Length > 0 && args[0] is int lr)
-                    ch.SendToLr = lr == 1;
-                else if (address.EndsWith("/config/source") && args.Length > 0 && args[0] is int src)
-                    ApplyInputSource(ch, src);
-                else
-                    TryApplyBusSend(ch, address, args);
+            if (address.EndsWith("/mix/fader") && args.Length > 0 && args[0] is float f)
+                ch.Volume = f;
+            else if (address.EndsWith("/mix/on") && args.Length > 0 && args[0] is int on)
+                ch.IsMuted = on == 0;
+            else if (address.EndsWith("/mix/pan") && args.Length > 0 && args[0] is float p)
+                ch.Pan = p;
+            else if (address.EndsWith("/config/name") && args.Length > 0 && args[0] is string name)
+                ch.Name = name;
+            else if (address.EndsWith("/mix/lr") && args.Length > 0 && args[0] is int lr)
+                ch.SendToLr = lr == 1;
+            else if (address.EndsWith("/config/source") && args.Length > 0 && args[0] is int src)
+                ApplyInputSource(ch, src);
+            else
+                TryApplyBusSend(ch, address, args);
+            return;
+        }
 
-                return;
-            }
-
-            // Output routing
-            var output = Mixer.Outputs.FirstOrDefault(o => address.StartsWith(o.OscBase));
-            if (output != null)
-            {
-                if (address.EndsWith("/src") && args.Length > 0 && args[0] is int osrc)
-                    output.Source = (OutputSource)Math.Clamp(osrc, 0, (int)OutputSource.DirectOut);
-                else if (address.EndsWith("/level") && args.Length > 0 && args[0] is float ol)
-                    output.Level = ol;
-            }
-        });
+        // Output routing
+        var output = Mixer.Outputs.FirstOrDefault(o => address.StartsWith(o.OscBase));
+        if (output != null)
+        {
+            if (address.EndsWith("/src") && args.Length > 0 && args[0] is int osrc)
+                output.Source = (OutputSource)Math.Clamp(osrc, 0, (int)OutputSource.DirectOut);
+            else if (address.EndsWith("/level") && args.Length > 0 && args[0] is float ol)
+                output.Level = ol;
+        }
     }
 
     private static void ApplyInputSource(Channel ch, int src)
@@ -468,8 +539,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
     public void Cleanup()
     {
-        _heartbeatTimer?.Stop();
-        _osc.Disconnect();
+        _osc.Disconnect();   // stops heartbeat
         _sceneService.AutoBackup(Mixer);
     }
 

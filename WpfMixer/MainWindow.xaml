@@ -124,7 +124,8 @@
                             </Style>
                         </ScrollViewer.Style>
                         <StackPanel Orientation="Horizontal" Margin="8,8">
-                            <ItemsControl ItemsSource="{Binding Mixer.InputChannels}">
+                            <!-- 18 input channel strips (ChannelViewModel) -->
+                            <ItemsControl ItemsSource="{Binding ChannelViewModels}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
@@ -135,18 +136,8 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                             <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
-                            <ItemsControl ItemsSource="{Binding Mixer.FxReturns}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <views:ChannelStripControl DataContext="{Binding}" Width="60" Margin="1,0"/>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
-                            <views:ChannelStripControl DataContext="{Binding Mixer.MainLR}" Width="80" Margin="2,0"/>
+                            <!-- Main LR strip -->
+                            <views:ChannelStripControl DataContext="{Binding MainLR}" Width="80" Margin="2,0"/>
                         </StackPanel>
                     </ScrollViewer>
 

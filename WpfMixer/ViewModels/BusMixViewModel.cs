@@ -67,9 +67,16 @@ public sealed partial class BusMixViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SelectBus(int busIndex)
+    private void SelectBus(object? busIndex)
     {
-        SelectedBusIndex = Math.Clamp(busIndex, 1, 6);
+        var index = busIndex switch
+        {
+            int i => i,
+            string s when int.TryParse(s, out var parsed) => parsed,
+            _ => SelectedBusIndex
+        };
+
+        SelectedBusIndex = Math.Clamp(index, 1, 6);
     }
 
     [RelayCommand]

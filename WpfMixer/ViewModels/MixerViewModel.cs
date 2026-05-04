@@ -32,6 +32,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private BusMixViewModel _busMix;
     [ObservableProperty] private MonitorMixViewModel _monitorMix;
     [ObservableProperty] private SceneManagerViewModel _sceneManager;
+    [ObservableProperty] private PerformanceViewModel _performance;
 
     public bool IsSofActive => BusMix.IsSofActive;
     public int SelectedSofBusIndex => BusMix.SelectedBusIndex;
@@ -66,6 +67,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         _routing = new RoutingViewModel(Mixer, _osc);
         _busMix = new BusMixViewModel(Mixer, _osc);
         _monitorMix = new MonitorMixViewModel(_busMix);
+        _performance = new PerformanceViewModel(Mixer, _osc);
         _sceneManager = new SceneManagerViewModel(
             _sceneService,
             () => Mixer,
@@ -268,6 +270,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
                 ch.Volume = f;
             else if (address.EndsWith("/mix/on") && args.Length > 0 && args[0] is int on)
                 ch.IsMuted = on == 0;
+            else if (address.EndsWith("/mix/solo") && args.Length > 0 && args[0] is int solo)
+                ch.IsSoloed = solo == 1;
             else if (address.EndsWith("/mix/pan") && args.Length > 0 && args[0] is float p)
                 ch.Pan = p;
             else if (address.EndsWith("/config/name") && args.Length > 0 && args[0] is string name)
@@ -341,6 +345,9 @@ public partial class MixerViewModel : ObservableObject, IDisposable
                     break;
                 case nameof(Channel.Pan):
                     _osc.Send($"{ch.OscBase}/mix/pan", (float)ch.Pan);
+                    break;
+                case nameof(Channel.IsSoloed):
+                    _osc.Send($"{ch.OscBase}/mix/solo", ch.IsSoloed ? 1 : 0);
                     break;
                 case nameof(Channel.SendToLr):
                     _osc.Send($"{ch.OscBase}/mix/lr", ch.SendToLr ? 1 : 0);
@@ -489,9 +496,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void PanicMute()
     {
-        IsPanicMuted = !IsPanicMuted;
-        foreach (var ch in Mixer.InputChannels)
-            ch.IsMuted = IsPanicMuted;
+        Performance.TogglePanicMuteCommand.Execute(null);
+        IsPanicMuted = Performance.IsPanicActive;
     }
 
     // ── Mute groups ──────────────────────────────────────────────────────────
@@ -604,7 +610,13 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     // ── Performance mode ─────────────────────────────────────────────────────
 
     [RelayCommand]
-    private void TogglePerformanceMode() => IsPerformanceMode = !IsPerformanceMode;
+    private void TogglePerformanceMode()
+    {
+        IsPerformanceMode = !IsPerformanceMode;
+        StatusText = IsPerformanceMode
+            ? "Performance mode active (F10 to toggle, Esc to exit)"
+            : "Performance mode off";
+    }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -664,6 +676,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         Routing = new RoutingViewModel(Mixer, _osc);
         BusMix = new BusMixViewModel(Mixer, _osc);
         MonitorMix = new MonitorMixViewModel(BusMix);
+        Performance = new PerformanceViewModel(Mixer, _osc);
         SceneManager.RefreshScenesCommand.Execute(null);
         WireBusMix(BusMix);
         FxRack.RebindModels(Mixer);

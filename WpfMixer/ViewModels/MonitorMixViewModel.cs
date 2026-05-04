@@ -50,8 +50,15 @@ public sealed partial class MonitorMixViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SelectBus(int busIndex)
+    private void SelectBus(object? busIndex)
     {
-        SelectedBusIndex = busIndex;
+        var index = busIndex switch
+        {
+            int i => i,
+            string s when int.TryParse(s, out var parsed) => parsed,
+            _ => SelectedBusIndex
+        };
+
+        SelectedBusIndex = index;
     }
 }

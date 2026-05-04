@@ -19,6 +19,20 @@ public partial class MainWindow : Window
 
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (e.Key == Key.F10)
+        {
+            _vm.TogglePerformanceModeCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
+        if (_vm.IsPerformanceMode && e.Key == Key.Escape)
+        {
+            _vm.TogglePerformanceModeCommand.Execute(null);
+            e.Handled = true;
+            return;
+        }
+
         if (Keyboard.FocusedElement is TextBox) return;
         if (_vm.KeyboardService.HandleKeyDown(e.Key)) e.Handled = true;
     }

@@ -9,7 +9,7 @@ public partial class MuteGroupButtonControl : UserControl
 {
     public MuteGroupButtonControl() => InitializeComponent();
 
-    private MainViewModel Vm => (MainViewModel)((FrameworkElement)Parent).DataContext;
+    private MixerViewModel Vm => (MixerViewModel)((FrameworkElement)Parent).DataContext;
     private MuteGroup Grp => (MuteGroup)DataContext;
 
     private void FireGroup_Click(object sender, RoutedEventArgs e)
@@ -35,8 +35,7 @@ public partial class MuteGroupButtonControl : UserControl
 
     private void EditGroup_Click(object sender, RoutedEventArgs e)
     {
-        new MuteGroupEditorDialog(Grp, Vm.Channels).ShowDialog();
-        Vm.SaveSettings();
+        new MuteGroupEditorDialog(Grp, Vm.Mixer.InputChannels).ShowDialog();
     }
 
     private void RemoveGroup_Click(object sender, RoutedEventArgs e)

@@ -6,11 +6,11 @@ namespace WpfMixer.Views;
 
 public partial class KeyMapWindow : Window
 {
-    public KeyMapWindow(MainViewModel vm)
+    public KeyMapWindow(MixerViewModel vm)
     {
         InitializeComponent();
 
-        ChannelGrid.ItemsSource = vm.Channels.Select(ch => new
+        ChannelGrid.ItemsSource = vm.Mixer.InputChannels.Select(ch => new
         {
             ch.Name,
             ch.AssignedKey,
@@ -25,6 +25,6 @@ public partial class KeyMapWindow : Window
         }).ToList();
     }
 
-    private void Close_Click(object sender, RoutedEventArgs e)
-        => Close();
+    private void Close_Click(object sender, RoutedEventArgs e) => Close();
 }
+

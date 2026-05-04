@@ -1,60 +1,79 @@
+using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace WpfMixer.Models;
 
+public enum ChannelType { Mono, Stereo, FxReturn, MainLR }
+
 public class Channel : ObservableObject
 {
-    private string _name = "Channel";
-    private bool _isMuted;
-    private double _volume = 1.0;        // 0.0 – 1.0 fader position
-    private string? _assignedKey;        // e.g. "A", "F1", "D1"
-    private bool _isMomentaryMute;
-    private bool _isKeyHighlighted;
-
+    // ── Identity ────────────────────────────────────────────────────────────
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
-    public string Name
-    {
-        get => _name;
-        set => SetProperty(ref _name, value);
-    }
+    /// <summary>1-based index on the X Air bus (1-18 for inputs, 99 = main LR).</summary>
+    public int XAirIndex { get; set; } = 1;
 
-    public bool IsMuted
-    {
-        get => _isMuted;
-        set => SetProperty(ref _isMuted, value);
-    }
+    public ChannelType Type { get; set; } = ChannelType.Mono;
 
+    // ── Name / color ────────────────────────────────────────────────────────
+    private string _name = "Ch";
+    public string Name { get => _name; set => SetProperty(ref _name, value); }
+
+    /// <summary>ARGB hex string, e.g. "#FF2196F3". Shown as color strip at top of channel.</summary>
+    private string _colorHex = "#FF607D8B";
+    public string ColorHex { get => _colorHex; set => SetProperty(ref _colorHex, value); }
+
+    [JsonIgnore]
+    public Color StripColor => (Color)ColorConverter.ConvertFromString(ColorHex);
+
+    // ── Fader / pan ─────────────────────────────────────────────────────────
+    private double _volume = 0.75;
     public double Volume
     {
         get => _volume;
         set => SetProperty(ref _volume, Math.Clamp(value, 0.0, 1.0));
     }
 
-    /// <summary>Key string as returned by Key.ToString() e.g. "A", "F1", "D1".</summary>
-    public string? AssignedKey
-    {
-        get => _assignedKey;
-        set => SetProperty(ref _assignedKey, value);
-    }
+    private double _pan = 0.5;   // 0.0=L  0.5=center  1.0=R
+    public double Pan { get => _pan; set => SetProperty(ref _pan, Math.Clamp(value, 0.0, 1.0)); }
 
-    /// <summary>When true: hold = muted, release = unmuted.</summary>
-    public bool IsMomentaryMute
-    {
-        get => _isMomentaryMute;
-        set => SetProperty(ref _isMomentaryMute, value);
-    }
+    // ── Mute / solo ─────────────────────────────────────────────────────────
+    private bool _isMuted;
+    public bool IsMuted { get => _isMuted; set => SetProperty(ref _isMuted, value); }
 
-    /// <summary>Transient: true while the assigned key is held down (visual flash).</summary>
+    private bool _isSoloed;
+    public bool IsSoloed { get => _isSoloed; set => SetProperty(ref _isSoloed, value); }
+
+    private bool _isSelected;
     [JsonIgnore]
-    public bool IsKeyHighlighted
-    {
-        get => _isKeyHighlighted;
-        set => SetProperty(ref _isKeyHighlighted, value);
-    }
+    public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
 
-    /// <summary>Saved pre-momentary mute state so we can restore on key-up.</summary>
+    // ── FX sends (4 buses) ──────────────────────────────────────────────────
+    public ObservableCollection<double> FxSends { get; set; } = [0.0, 0.0, 0.0, 0.0];
+
+    // ── Meter (real-time, not persisted) ─────────────────────────────────────
+    [JsonIgnore] private double _meterLevel;
     [JsonIgnore]
-    public bool PreMomentaryMutedState { get; set; }
+    public double MeterLevel { get => _meterLevel; set => SetProperty(ref _meterLevel, value); }
+
+    // ── Keyboard assignment ─────────────────────────────────────────────────
+    private string? _assignedKey;
+    public string? AssignedKey { get => _assignedKey; set => SetProperty(ref _assignedKey, value); }
+
+    private bool _isMomentaryMute;
+    public bool IsMomentaryMute { get => _isMomentaryMute; set => SetProperty(ref _isMomentaryMute, value); }
+
+    [JsonIgnore] public bool IsKeyHighlighted { get => _isKeyHighlighted; set => SetProperty(ref _isKeyHighlighted, value); }
+    private bool _isKeyHighlighted;
+
+    [JsonIgnore] public bool PreMomentaryMutedState { get; set; }
+
+    // ── OSC path helpers ─────────────────────────────────────────────────────
+    [JsonIgnore]
+    public string OscBase => Type == ChannelType.MainLR
+        ? "/lr"
+        : $"/ch/{XAirIndex:D2}";
 }
+

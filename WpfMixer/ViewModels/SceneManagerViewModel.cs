@@ -9,9 +9,16 @@ namespace WpfMixer.ViewModels;
 
 public sealed partial class SceneManagerViewModel : ObservableObject
 {
+    public sealed class TransitionOption(string label, int durationMs)
+    {
+        public string Label { get; } = label;
+        public int DurationMs { get; } = durationMs;
+        public override string ToString() => Label;
+    }
+
     private readonly SceneService _sceneService;
     private readonly Func<MixerModel> _getCurrentMixer;
-    private readonly Func<SceneModel, Task> _applyScene;
+    private readonly Func<SceneModel, int, Task> _applyScene;
 
     public ObservableCollection<SceneViewModel> Scenes { get; } = [];
 
@@ -19,10 +26,18 @@ public sealed partial class SceneManagerViewModel : ObservableObject
     [ObservableProperty] private string _newSceneName = "scene";
     [ObservableProperty] private string _sceneNotes = string.Empty;
     [ObservableProperty] private string _status = "Ready";
+    [ObservableProperty] private TransitionOption _selectedTransition = new("Normal", 450);
+
+    public IReadOnlyList<TransitionOption> TransitionOptions { get; } =
+    [
+        new("Fast", 300),
+        new("Normal", 450),
+        new("Slow", 600)
+    ];
 
     public string ScenesDirectory => _sceneService.ScenesDirectory;
 
-    public SceneManagerViewModel(SceneService sceneService, Func<MixerModel> getCurrentMixer, Func<SceneModel, Task> applyScene)
+    public SceneManagerViewModel(SceneService sceneService, Func<MixerModel> getCurrentMixer, Func<SceneModel, int, Task> applyScene)
     {
         _sceneService = sceneService;
         _getCurrentMixer = getCurrentMixer;
@@ -77,7 +92,7 @@ public sealed partial class SceneManagerViewModel : ObservableObject
             return;
         }
 
-        await _applyScene(scene);
+        await _applyScene(scene, SelectedTransition.DurationMs);
         Status = $"Loaded {scene.Name}";
     }
 

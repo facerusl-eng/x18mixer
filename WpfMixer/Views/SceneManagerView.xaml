@@ -50,14 +50,22 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="100"/>
                         <ColumnDefinition Width="130"/>
                         <ColumnDefinition Width="130"/>
                         <ColumnDefinition Width="130"/>
                     </Grid.ColumnDefinitions>
                     <TextBox Grid.Column="0" Text="{Binding NewSceneName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"/>
-                    <Button Grid.Column="1" Content="Save Scene" Style="{StaticResource PtButton}" Command="{Binding SaveSceneCommand}" Margin="0,0,6,0"/>
-                    <Button Grid.Column="2" Content="Load Scene" Style="{StaticResource PtButton}" Command="{Binding LoadSceneCommand}" Margin="0,0,6,0"/>
-                    <Button Grid.Column="3" Content="Rename" Style="{StaticResource PtButton}" Command="{Binding RenameSceneCommand}"/>
+                    <TextBlock Grid.Column="1" Text="Transition" VerticalAlignment="Center" Foreground="{StaticResource TextSecondary}" Margin="0,0,6,0"/>
+                    <ComboBox Grid.Column="2"
+                              ItemsSource="{Binding TransitionOptions}"
+                              DisplayMemberPath="Label"
+                              SelectedItem="{Binding SelectedTransition, Mode=TwoWay}"
+                              Margin="0,0,8,0"/>
+                    <Button Grid.Column="3" Content="Save Scene" Style="{StaticResource PtButton}" Command="{Binding SaveSceneCommand}" Margin="0,0,6,0"/>
+                    <Button Grid.Column="4" Content="Load Scene" Style="{StaticResource PtButton}" Command="{Binding LoadSceneCommand}" Margin="0,0,6,0"/>
+                    <Button Grid.Column="5" Content="Rename" Style="{StaticResource PtButton}" Command="{Binding RenameSceneCommand}"/>
                 </Grid>
             </Border>
         </Grid>

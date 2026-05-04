@@ -69,7 +69,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         _sceneManager = new SceneManagerViewModel(
             _sceneService,
             () => Mixer,
-            scene => ApplySceneModelAsync(scene));
+            (scene, durationMs) => ApplySceneModelAsync(scene, true, true, durationMs));
         WireBusMix(_busMix);
 
         _historyDebounce = new System.Timers.Timer(300) { AutoReset = false };
@@ -632,7 +632,11 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         });
     }
 
-    private async Task ApplySceneModelAsync(SceneModel scene, bool pushCurrentToUndo = true, bool makeBackupBeforeLoad = true)
+    private async Task ApplySceneModelAsync(
+        SceneModel scene,
+        bool pushCurrentToUndo = true,
+        bool makeBackupBeforeLoad = true,
+        int transitionDurationMs = 450)
     {
         if (pushCurrentToUndo)
             _undoRedo.PushSnapshot(_sceneService.CloneMixer(Mixer), "Before scene load");
@@ -644,7 +648,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         try
         {
             var target = _sceneService.CloneMixer(scene.Snapshot);
-            await _sceneTransition.ApplySceneAsync(Mixer, target, 450);
+            await _sceneTransition.ApplySceneAsync(Mixer, target, transitionDurationMs);
             Mixer = target;
             RebuildViewModelsAfterMixerSwap();
             StatusText = $"Scene loaded: {scene.Name}";

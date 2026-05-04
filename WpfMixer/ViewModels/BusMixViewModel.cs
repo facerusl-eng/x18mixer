@@ -10,6 +10,8 @@ public sealed partial class BusMixViewModel : ObservableObject
 {
     private readonly MixerModel _mixer;
     private readonly OscClient _osc;
+    private bool _suppressBusMasterSend;
+    private int _busMasterAnimationVersion;
 
     public ObservableCollection<BusMixModel> BusMixModels { get; } = [];
     public ObservableCollection<FxReturnMixModel> FxReturnMixModels { get; } = [];
@@ -52,6 +54,7 @@ public sealed partial class BusMixViewModel : ObservableObject
         if (model is null) return;
         var clamped = Math.Clamp(value, 0f, 1f);
         model.BusMasterLevel = clamped;
+        if (_suppressBusMasterSend) return;
         _osc.Send($"/bus/{SelectedBusIndex:D2}/mix/fader", clamped);
     }
 
@@ -117,7 +120,7 @@ public sealed partial class BusMixViewModel : ObservableObject
                 {
                     float f = args[0] is float ff ? ff : args[0] is int fi ? fi : bus.BusMasterLevel;
                     bus.BusMasterLevel = Math.Clamp(f, 0f, 1f);
-                    if (busIdx == SelectedBusIndex) BusMasterLevel = bus.BusMasterLevel;
+                    if (busIdx == SelectedBusIndex) AnimateBusMasterFromOsc(bus.BusMasterLevel);
                     return true;
                 }
 
@@ -209,6 +212,36 @@ public sealed partial class BusMixViewModel : ObservableObject
         BusMasterLevel = bus.BusMasterLevel;
         BusMasterMute = bus.BusMasterMute;
     }
+
+    private async void AnimateBusMasterFromOsc(float target)
+    {
+        int version = ++_busMasterAnimationVersion;
+        _suppressBusMasterSend = true;
+        try
+        {
+            float current = BusMasterLevel;
+            for (int i = 0; i < 12 && version == _busMasterAnimationVersion; i++)
+            {
+                current += (target - current) * 0.35f;
+                if (Math.Abs(target - current) < 0.0025f)
+                {
+                    BusMasterLevel = target;
+                    return;
+                }
+
+                BusMasterLevel = current;
+                await Task.Delay(16);
+            }
+
+            if (version == _busMasterAnimationVersion)
+                BusMasterLevel = target;
+        }
+        finally
+        {
+            if (version == _busMasterAnimationVersion)
+                _suppressBusMasterSend = false;
+        }
+    }
 }
 
 public sealed partial class FxReturnMixSlotViewModel : ObservableObject
@@ -216,6 +249,7 @@ public sealed partial class FxReturnMixSlotViewModel : ObservableObject
     private readonly FxReturnMixModel _model;
     private readonly OscClient _osc;
     private bool _suppress;
+    private int _levelAnimationVersion;
 
     public int FxIndex => _model.FxIndex;
 
@@ -255,15 +289,46 @@ public sealed partial class FxReturnMixSlotViewModel : ObservableObject
 
     public void SetFromOsc(float level, bool mute)
     {
+        AnimateLevelFromOsc(Math.Clamp(level, 0f, 1f));
+
         _suppress = true;
         try
         {
-            Level = Math.Clamp(level, 0f, 1f);
             Mute = mute;
         }
         finally
         {
             _suppress = false;
+        }
+    }
+
+    private async void AnimateLevelFromOsc(float target)
+    {
+        int version = ++_levelAnimationVersion;
+        _suppress = true;
+        try
+        {
+            float current = Level;
+            for (int i = 0; i < 12 && version == _levelAnimationVersion; i++)
+            {
+                current += (target - current) * 0.35f;
+                if (Math.Abs(target - current) < 0.0025f)
+                {
+                    Level = target;
+                    return;
+                }
+
+                Level = current;
+                await Task.Delay(16);
+            }
+
+            if (version == _levelAnimationVersion)
+                Level = target;
+        }
+        finally
+        {
+            if (version == _levelAnimationVersion)
+                _suppress = false;
         }
     }
 }

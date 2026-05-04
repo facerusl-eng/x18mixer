@@ -11,6 +11,7 @@ public sealed partial class ChannelSendViewModel : ObservableObject
     private readonly BusMixModel _bus;
     private readonly int _busIndex;
     private bool _suppress;
+    private int _levelAnimationVersion;
 
     public int ChannelIndex => _channel.XAirIndex;
     public string ChannelName => _channel.Name;
@@ -64,16 +65,48 @@ public sealed partial class ChannelSendViewModel : ObservableObject
 
     public void ApplyFromOsc(float? level, bool? on, bool? pre)
     {
+        if (level.HasValue)
+            AnimateLevelFromOsc(Math.Clamp(level.Value, 0f, 1f));
+
         _suppress = true;
         try
         {
-            if (level.HasValue) SendLevel = Math.Clamp(level.Value, 0f, 1f);
             if (on.HasValue) SendOn = on.Value;
             if (pre.HasValue) PrePost = pre.Value;
         }
         finally
         {
             _suppress = false;
+        }
+    }
+
+    private async void AnimateLevelFromOsc(float target)
+    {
+        int version = ++_levelAnimationVersion;
+        _suppress = true;
+        try
+        {
+            float current = SendLevel;
+            for (int i = 0; i < 12 && version == _levelAnimationVersion; i++)
+            {
+                current += (target - current) * 0.35f;
+                if (Math.Abs(target - current) < 0.0025f)
+                {
+                    SendLevel = target;
+                    return;
+                }
+
+                SendLevel = current;
+                await Task.Delay(16);
+            }
+
+            if (version == _levelAnimationVersion)
+                SendLevel = target;
+        }
+        finally
+        {
+            if (version == _levelAnimationVersion)
+                _suppress = false;
         }
     }
 }

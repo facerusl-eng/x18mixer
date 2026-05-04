@@ -33,6 +33,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private MonitorMixViewModel _monitorMix;
     [ObservableProperty] private SceneManagerViewModel _sceneManager;
     [ObservableProperty] private PerformanceViewModel _performance;
+    [ObservableProperty] private RemoteControlViewModel _remoteControl;
 
     public bool IsSofActive => BusMix.IsSofActive;
     public int SelectedSofBusIndex => BusMix.SelectedBusIndex;
@@ -68,6 +69,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         _busMix = new BusMixViewModel(Mixer, _osc);
         _monitorMix = new MonitorMixViewModel(_busMix);
         _performance = new PerformanceViewModel(Mixer, _osc);
+        _remoteControl = new RemoteControlViewModel(_osc);
         _sceneManager = new SceneManagerViewModel(
             _sceneService,
             () => Mixer,
@@ -258,6 +260,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     {
         // Delegate to the unified handler (routes to ChannelViewModel + legacy routing)
         HandleOscMessage(address, args);
+        // Forward to remote web clients
+        RemoteControl.ForwardOscToClients(address, args);
     }
 
     private void HandleRoutingOsc(string address, object[] args)
@@ -719,6 +723,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         Cleanup();
+        RemoteControl.Dispose();
         _osc.Dispose();
         _discovery.Dispose();
     }

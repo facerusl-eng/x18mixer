@@ -248,6 +248,11 @@
                 <views:RoutingView DataContext="{Binding}" />
             </TabItem>
 
+            <!-- ─── REMOTE CONTROL TAB ─── -->
+            <TabItem Header="REMOTE">
+                <views:RemoteControlView DataContext="{Binding RemoteControl}" />
+            </TabItem>
+
         </TabControl>
 
         <views:PerformanceView Grid.Row="1" DataContext="{Binding Performance}">

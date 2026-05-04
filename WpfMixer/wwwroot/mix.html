@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>{{MUSICIAN_NAME}} – Monitor Mix</title>
+  <style>
+    /* ── Reset & base ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:   {{MUSICIAN_COLOR}};
+      --bg:       #0d0d0d;
+      --bg2:      #161616;
+      --bg3:      #1e1e1e;
+      --border:   #2a2a2a;
+      --text:     #e0e0e0;
+      --text2:    #888;
+      --muted:    #e53935;
+      --fader-h:  220px;
+      --strip-w:  80px;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-x;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    #header {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      height: 52px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    }
+    #header h1 {
+      font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent);
+    }
+    #conn-dot {
+      width: 10px; height: 10px; border-radius: 50%; background: #444;
+      transition: background 0.4s;
+    }
+    #conn-dot.ok  { background: #1db954; }
+    #conn-dot.err { background: var(--muted); }
+
+    /* ── Main strip area ─────────────────────────────────────────────── */
+    #strip-container {
+      position: fixed; top: 52px; bottom: 90px; left: 0; right: 0;
+      overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+      display: flex; align-items: stretch;
+      padding: 0 8px;
+      gap: 4px;
+    }
+
+    /* ── Channel strip ───────────────────────────────────────────────── */
+    .strip {
+      flex: 0 0 var(--strip-w);
+      scroll-snap-align: start;
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--bg3);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px 6px 8px;
+      gap: 6px;
+      position: relative;
+      transition: border-color 0.2s;
+      margin-top: 10px;
+    }
+    .strip.muted { opacity: 0.5; }
+    .strip.muted .fader-knob { background: var(--muted) !important; }
+
+    /* Channel label */
+    .strip-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+      text-align: center; color: var(--text2);
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ── Vertical fader ──────────────────────────────────────────────── */
+    .fader-wrap {
+      flex: 1;
+      width: 100%; position: relative;
+      min-height: var(--fader-h);
+      touch-action: none;
+    }
+    .fader-track {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      width: 6px; top: 0; bottom: 0;
+      background: #2a2a2a; border-radius: 3px;
+    }
+    .fader-fill {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      border-radius: 3px;
+      background: var(--accent);
+      transition: height 0.05s linear;
+    }
+    .fader-knob {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      width: 32px; height: 20px; border-radius: 5px;
+      background: var(--accent);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.7);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .fader-knob::after {
+      content: ''; width: 16px; height: 2px; background: rgba(0,0,0,0.4); border-radius: 1px;
+    }
+
+    /* dB label next to fader */
+    .db-label {
+      font-size: 9px; font-family: monospace; color: var(--text2); text-align: center;
+    }
+
+    /* ── Mute button ─────────────────────────────────────────────────── */
+    .mute-btn {
+      width: 100%; padding: 8px 4px;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text2);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+      cursor: pointer; text-align: center;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, color 0.15s;
+    }
+    .mute-btn.active { background: var(--muted); border-color: var(--muted); color: #fff; }
+
+    /* ── Bus master strip (pinned right) ────────────────────────────── */
+    #bus-strip {
+      flex: 0 0 68px;
+      background: #1a1f1a;
+      border: 1px solid var(--accent);
+    }
+    #bus-strip .strip-label { color: var(--accent); }
+
+    /* ── Footer ──────────────────────────────────────────────────────── */
+    #footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--bg2); border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 90px;
+    }
+    #footer-label { font-size: 11px; color: var(--text2); }
+    #footer-label span { color: var(--accent); font-weight: 700; }
+
+    /* ── Disconnected overlay ─────────────────────────────────────────── */
+    #offline-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.88);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 12px;
+      color: var(--text2); font-size: 14px; text-align: center;
+    }
+    #offline-overlay.show { display: flex; }
+    #offline-overlay strong { color: var(--muted); font-size: 18px; }
+    #reconnect-btn {
+      margin-top: 8px; padding: 10px 28px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px; cursor: pointer;
+    }
+
+    /* ── Toast notification ──────────────────────────────────────────── */
+    #toast {
+      position: fixed; top: 62px; left: 50%; transform: translateX(-50%);
+      background: #1e1e1e; border: 1px solid var(--accent);
+      padding: 8px 18px; border-radius: 20px;
+      font-size: 12px; color: var(--accent);
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none; z-index: 50;
+    }
+    #toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <h1 id="page-title">{{MUSICIAN_NAME}}</h1>
+  <div id="conn-dot"></div>
+</div>
+
+<!-- Channel strips -->
+<div id="strip-container">
+  <!-- populated by JS -->
+</div>
+
+<!-- Footer info -->
+<div id="footer">
+  <div id="footer-label">Monitor Mix · <span id="bus-label">Bus –</span></div>
+  <div id="footer-label" style="font-size:10px;color:#444">X Air Remote</div>
+</div>
+
+<!-- Offline overlay -->
+<div id="offline-overlay">
+  <strong>Disconnected</strong>
+  <span>Lost connection to X Air Controller</span>
+  <button id="reconnect-btn" onclick="connect()">Reconnect</button>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // ── Bootstrap data injected by server ──────────────────────────────────────
+  const WS_URL  = '{{WS_URL}}';
+  const CFG_URL = '{{CFG_URL}}';
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let ws       = null;
+  let config   = null;   // { name, slug, busIndex, color, channels }
+  let faders   = {};     // { channelIndex: float 0..1 }
+  let mutes    = {};     // { channelIndex: bool }
+  let busFader = 1.0;
+  let reconnectTimer = null;
+  let dragging = null;   // { el, trackEl, fillEl, knobEl, isbus, index, startY, startVal }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  async function init() {
+    try {
+      const resp = await fetch(CFG_URL);
+      if (!resp.ok) { showOffline(); return; }
+      config = await resp.json();
+      buildUI();
+      connect();
+    } catch(e) {
+      showOffline();
+    }
+  }
+
+  // ── Build strip UI ─────────────────────────────────────────────────────────
+  function buildUI() {
+    const container = document.getElementById('strip-container');
+    container.innerHTML = '';
+
+    document.getElementById('bus-label').textContent = `Bus ${config.busIndex}`;
+    document.title = `${config.name} – Monitor Mix`;
+
+    // channel strips
+    config.channels.forEach(ch => {
+      faders[ch.index] = 0.75;
+      mutes[ch.index]  = false;
+      container.appendChild(makeStrip(ch.index, ch.label, ch.color, false));
+    });
+
+    // bus master strip (pinned at end)
+    const busStrip = makeStrip(-1, `BUS ${config.busIndex}`, config.color, true);
+    busStrip.id = 'bus-strip';
+    container.appendChild(busStrip);
+  }
+
+  function makeStrip(index, label, color, isBus) {
+    const div = document.createElement('div');
+    div.className = 'strip';
+    div.dataset.index = index;
+
+    // label
+    const lbl = document.createElement('div');
+    lbl.className = 'strip-label';
+    lbl.textContent = label;
+    div.appendChild(lbl);
+
+    // fader wrap
+    const wrap = document.createElement('div');
+    wrap.className = 'fader-wrap';
+    const track = document.createElement('div');
+    track.className = 'fader-track';
+    const fill = document.createElement('div');
+    fill.className = 'fader-fill';
+    fill.style.setProperty('height', '75%');
+    fill.style.setProperty('background', color);
+    const knob = document.createElement('div');
+    knob.className = 'fader-knob';
+    knob.style.setProperty('background', color);
+    positionKnob(knob, fill, 0.75);
+    track.appendChild(fill);
+    track.appendChild(knob);
+    wrap.appendChild(track);
+    div.appendChild(wrap);
+
+    // dB label
+    const db = document.createElement('div');
+    db.className = 'db-label';
+    db.textContent = '0dB';
+    div.appendChild(db);
+
+    // mute button (channels only)
+    if (!isBus) {
+      const btn = document.createElement('button');
+      btn.className = 'mute-btn';
+      btn.textContent = 'MUTE';
+      btn.addEventListener('click', () => toggleMute(index, btn));
+      div.appendChild(btn);
+    }
+
+    // Touch / pointer fader events
+    wrap.addEventListener('pointerdown', e => startDrag(e, wrap, knob, fill, db, isBus, index));
+
+    return div;
+  }
+
+  // ── Fader positioning helpers ─────────────────────────────────────────────
+  function positionKnob(knob, fill, value) {
+    const pct = value * 100;
+    knob.style.bottom  = `calc(${pct}% - 10px)`;
+    fill.style.height  = `${pct}%`;
+  }
+
+  function valueToDb(v) {
+    if (v <= 0)    return '-∞';
+    if (v >= 1)    return '+10';
+    if (v >= 0.75) return '0';
+    const db = 40 * v - 30;
+    return (db >= 0 ? '+' : '') + db.toFixed(1);
+  }
+
+  // ── Drag handling ──────────────────────────────────────────────────────────
+  function startDrag(e, wrap, knob, fill, db, isBus, index) {
+    e.preventDefault();
+    const trackH = wrap.getBoundingClientRect().height;
+    const startY = e.clientY;
+    const startV = isBus ? busFader : (faders[index] ?? 0.75);
+
+    dragging = { wrap, knob, fill, db, isBus, index, startY, startV, trackH };
+    wrap.setPointerCapture(e.pointerId);
+    wrap.addEventListener('pointermove', onDragMove);
+    wrap.addEventListener('pointerup',   onDragEnd);
+    wrap.addEventListener('pointercancel', onDragEnd);
+  }
+
+  function onDragMove(e) {
+    if (!dragging) return;
+    const dy     = dragging.startY - e.clientY;
+    const delta  = dy / dragging.trackH;
+    const newVal = Math.max(0, Math.min(1, dragging.startV + delta));
+
+    positionKnob(dragging.knob, dragging.fill, newVal);
+    dragging.db.textContent = valueToDb(newVal);
+
+    if (dragging.isBus) {
+      busFader = newVal;
+      send({ action: 'setBusMaster', bus: config.busIndex, value: newVal });
+    } else {
+      faders[dragging.index] = newVal;
+      send({ action: 'setSend', channel: dragging.index, bus: config.busIndex, value: newVal });
+    }
+  }
+
+  function onDragEnd(e) {
+    if (!dragging) return;
+    dragging.wrap.releasePointerCapture(e.pointerId);
+    dragging.wrap.removeEventListener('pointermove', onDragMove);
+    dragging.wrap.removeEventListener('pointerup',   onDragEnd);
+    dragging.wrap.removeEventListener('pointercancel', onDragEnd);
+    dragging = null;
+  }
+
+  // ── Mute ──────────────────────────────────────────────────────────────────
+  function toggleMute(index, btn) {
+    const next = !mutes[index];
+    mutes[index] = next;
+    btn.classList.toggle('active', next);
+    const strip = btn.closest('.strip');
+    if (strip) strip.classList.toggle('muted', next);
+    send({ action: 'setMute', channel: index, value: next });
+  }
+
+  // ── WebSocket ─────────────────────────────────────────────────────────────
+  function connect() {
+    hideOffline();
+    if (ws) { ws.onclose = null; ws.close(); }
+
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      setDot(true);
+      showToast('Connected');
+      clearTimeout(reconnectTimer);
+      // keepalive ping every 20 s
+      setInterval(() => send({ action: 'ping' }), 20000);
+    };
+
+    ws.onmessage = e => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'oscUpdate') handleOscUpdate(msg);
+      } catch {}
+    };
+
+    ws.onerror = () => setDot(false);
+
+    ws.onclose = () => {
+      setDot(false);
+      showOffline();
+      reconnectTimer = setTimeout(connect, 4000);
+    };
+  }
+
+  function send(obj) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(obj));
+    }
+  }
+
+  // ── Handle incoming OSC updates ───────────────────────────────────────────
+  function handleOscUpdate(msg) {
+    const addr = msg.address;
+    const val  = parseFloat(msg.args?.[0] ?? 0);
+
+    // /ch/03/mix/02/level  → update fader
+    const sendMatch = addr.match(/^\/ch\/(\d+)\/mix\/(\d+)\/level$/);
+    if (sendMatch) {
+      const ch  = parseInt(sendMatch[1]);
+      const bus = parseInt(sendMatch[2]);
+      if (bus === config.busIndex && faders[ch] !== undefined) {
+        faders[ch] = val;
+        updateFaderUI(ch, val, false);
+      }
+    }
+
+    // /ch/05/mix/on  → update mute
+    const muteMatch = addr.match(/^\/ch\/(\d+)\/mix\/on$/);
+    if (muteMatch) {
+      const ch = parseInt(muteMatch[1]);
+      if (mutes[ch] !== undefined) {
+        mutes[ch] = val === 0;
+        updateMuteUI(ch, mutes[ch]);
+      }
+    }
+
+    // /bus/02/mix/fader  → update bus master
+    const busMatch = addr.match(/^\/bus\/(\d+)\/mix\/fader$/);
+    if (busMatch) {
+      const bus = parseInt(busMatch[1]);
+      if (bus === config.busIndex) {
+        busFader = val;
+        updateFaderUI(-1, val, true);
+      }
+    }
+  }
+
+  function updateFaderUI(index, value, isBus) {
+    const strip = isBus
+      ? document.getElementById('bus-strip')
+      : document.querySelector(`.strip[data-index="${index}"]`);
+    if (!strip) return;
+    const knob = strip.querySelector('.fader-knob');
+    const fill = strip.querySelector('.fader-fill');
+    const db   = strip.querySelector('.db-label');
+    if (knob && fill) positionKnob(knob, fill, value);
+    if (db) db.textContent = valueToDb(value);
+  }
+
+  function updateMuteUI(index, isMuted) {
+    const strip = document.querySelector(`.strip[data-index="${index}"]`);
+    if (!strip) return;
+    strip.classList.toggle('muted', isMuted);
+    const btn = strip.querySelector('.mute-btn');
+    if (btn) btn.classList.toggle('active', isMuted);
+  }
+
+  // ── UI helpers ────────────────────────────────────────────────────────────
+  function setDot(ok) {
+    const dot = document.getElementById('conn-dot');
+    dot.className = ok ? 'ok' : 'err';
+  }
+
+  function showOffline() { document.getElementById('offline-overlay').classList.add('show'); }
+  function hideOffline() { document.getElementById('offline-overlay').classList.remove('show'); }
+
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  init();
+</script>
+</body>
+</html>

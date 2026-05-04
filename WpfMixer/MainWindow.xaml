@@ -138,15 +138,187 @@
             <!-- ─── MIXER TAB ─── -->
             <TabItem Header="MIXER">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>      <!-- channel area -->
-                        <ColumnDefinition Width="192"/>    <!-- right master panel -->
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="270"/>   <!-- Control Room -->
+                        <RowDefinition Height="5"/>     <!-- Splitter -->
+                        <RowDefinition Height="*"/>     <!-- Fader Zone -->
+                    </Grid.RowDefinitions>
 
-                    <Grid Grid.Column="0">
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <!-- ROW 0 ▸ CONTROL ROOM                                   -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <Border Grid.Row="0"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#FF1A1030" Offset="0"/>
+                                <GradientStop Color="#FF0E0820" Offset="0.6"/>
+                                <GradientStop Color="#FF05040B" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <Border.Effect>
+                            <DropShadowEffect Color="#88A259FF" ShadowDepth="0" BlurRadius="20" Opacity="0.4"/>
+                        </Border.Effect>
+
+                        <Grid Margin="10,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="160"/>  <!-- MAIN LR master fader -->
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>    <!-- DCA / Mute / Bus / VU -->
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="160"/>  <!-- Scenes / Panic -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Left: MAIN LR master fader -->
+                            <Border Grid.Column="0"
+                                    BorderBrush="{StaticResource Accent}" BorderThickness="1" CornerRadius="6"
+                                    Padding="10,8">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="#FF0D1F0D" Offset="0"/>
+                                        <GradientStop Color="#FF071407" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#FF1DB954" ShadowDepth="0" BlurRadius="10" Opacity="0.25"/>
+                                </Border.Effect>
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="X AIR" FontFamily="{StaticResource MonoFont}"
+                                               FontSize="15" FontWeight="Bold"
+                                               Foreground="{StaticResource Accent}"
+                                               HorizontalAlignment="Center" Margin="0,0,0,2"/>
+                                    <TextBlock Text="MAIN  L/R" FontFamily="{StaticResource MonoFont}"
+                                               FontSize="9" FontWeight="Bold"
+                                               Foreground="{StaticResource Accent}" Opacity="0.7"
+                                               HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                    <Slider Style="{StaticResource VerticalFader}"
+                                            Value="{Binding MainLR.FaderLevel, Mode=TwoWay}"
+                                            Height="140" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding MainLR.FaderLevel, Converter={StaticResource DbLabel}}"
+                                               FontFamily="{StaticResource MonoFont}" FontSize="13" FontWeight="Bold"
+                                               Foreground="#FF00E676" HorizontalAlignment="Center" Margin="0,6,0,2"/>
+                                    <TextBlock Text="{Binding StatusText}"
+                                               FontFamily="{StaticResource MonoFont}" FontSize="8"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="140"
+                                               Opacity="0.6"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Center: DCA / Mute / Bus / FX overview -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0"
+                                           Text="— CONTROL ROOM —"
+                                           FontFamily="{StaticResource MonoFont}" FontSize="11" FontWeight="Bold"
+                                           Foreground="{StaticResource Accent}" Opacity="0.55"
+                                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- DCA Groups -->
+                                    <Border Grid.Column="0"
+                                            Background="#FF111111" BorderBrush="{StaticResource BorderBrush}"
+                                            BorderThickness="1" CornerRadius="5" Padding="10,8">
+                                        <StackPanel>
+                                            <TextBlock Text="DCA GROUPS" FontFamily="{StaticResource MonoFont}"
+                                                       FontSize="9" Foreground="{StaticResource TextSecondary}"
+                                                       HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                            <UniformGrid Columns="2" Rows="2">
+                                                <Button Content="DCA 1" Style="{StaticResource PtButton}" Margin="3"/>
+                                                <Button Content="DCA 2" Style="{StaticResource PtButton}" Margin="3"/>
+                                                <Button Content="DCA 3" Style="{StaticResource PtButton}" Margin="3"/>
+                                                <Button Content="DCA 4" Style="{StaticResource PtButton}" Margin="3"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Mute Groups -->
+                                    <Border Grid.Column="2"
+                                            Background="#FF111111" BorderBrush="{StaticResource BorderBrush}"
+                                            BorderThickness="1" CornerRadius="5" Padding="10,8">
+                                        <StackPanel>
+                                            <TextBlock Text="MUTE GROUPS" FontFamily="{StaticResource MonoFont}"
+                                                       FontSize="9" Foreground="{StaticResource TextSecondary}"
+                                                       HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                            <UniformGrid Columns="2" Rows="2">
+                                                <Button Content="MG 1" Style="{StaticResource PtButton}" Margin="3"/>
+                                                <Button Content="MG 2" Style="{StaticResource PtButton}" Margin="3"/>
+                                                <Button Content="MG 3" Style="{StaticResource PtButton}" Margin="3"/>
+                                                <Button Content="MG 4" Style="{StaticResource PtButton}" Margin="3"/>
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- AUX / Bus Sends -->
+                                    <Border Grid.Column="4"
+                                            Background="#FF111111" BorderBrush="{StaticResource BorderBrush}"
+                                            BorderThickness="1" CornerRadius="5" Padding="10,8">
+                                        <StackPanel>
+                                            <TextBlock Text="AUX / BUS" FontFamily="{StaticResource MonoFont}"
+                                                       FontSize="9" Foreground="{StaticResource TextSecondary}"
+                                                       HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                            <Button Content="Bus 1" Style="{StaticResource PtButton}" Margin="1,2" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="1"/>
+                                            <Button Content="Bus 2" Style="{StaticResource PtButton}" Margin="1,2" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="2"/>
+                                            <Button Content="Bus 3" Style="{StaticResource PtButton}" Margin="1,2" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="3"/>
+                                            <Button Content="Bus 4" Style="{StaticResource PtButton}" Margin="1,2" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="4"/>
+                                            <Button Content="Bus 5" Style="{StaticResource PtButton}" Margin="1,2" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="5"/>
+                                            <Button Content="Bus 6" Style="{StaticResource PtButton}" Margin="1,2" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="6"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+
+                            <!-- Right: Scenes / Undo / Panic -->
+                            <Border Grid.Column="4"
+                                    Background="#FF111111" BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1" CornerRadius="6" Padding="10,8">
+                                <StackPanel>
+                                    <TextBlock Text="SCENES" FontFamily="{StaticResource MonoFont}"
+                                               FontSize="9" Foreground="{StaticResource TextSecondary}"
+                                               HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                    <Button Content="Save Scene" Style="{StaticResource PtButton}" Margin="1,3" Command="{Binding SaveSceneCommand}"/>
+                                    <Button Content="Load Scene" Style="{StaticResource PtButton}" Margin="1,3" Command="{Binding LoadSceneCommand}"/>
+                                    <Button Content="Undo" Style="{StaticResource PtButton}" Margin="1,3" Command="{Binding UndoCommand}"/>
+                                    <Button Content="Redo" Style="{StaticResource PtButton}" Margin="1,3" Command="{Binding RedoCommand}"/>
+                                    <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,10"/>
+                                    <Button Content="PANIC" FontWeight="Bold" FontSize="13"
+                                            Style="{StaticResource PtButton}"
+                                            Command="{Binding PanicMuteCommand}"
+                                            Background="#FF3A0000" BorderBrush="#FFE53935"
+                                            Foreground="#FFE53935" Margin="1,3"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <!-- Draggable divider -->
+                    <GridSplitter Grid.Row="1"
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  Background="#FF2A1A4A" ResizeDirection="Rows" Cursor="SizeNS">
+                        <GridSplitter.Effect>
+                            <DropShadowEffect Color="#FF6644FF" ShadowDepth="0" BlurRadius="6" Opacity="0.5"/>
+                        </GridSplitter.Effect>
+                    </GridSplitter>
+
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <!-- ROW 2 ▸ FADER ZONE                                     -->
+                    <!-- ═══════════════════════════════════════════════════════ -->
+                    <Grid Grid.Row="2">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>   <!-- SOF bar -->
-                            <RowDefinition Height="*"/>      <!-- channels -->
+                            <RowDefinition Height="*"/>      <!-- channel strips -->
                         </Grid.RowDefinitions>
 
                         <!-- SOF Selector Bar -->
@@ -170,7 +342,7 @@
                             </DockPanel>
                         </Border>
 
-                        <!-- Full-height channel scroll area -->
+                        <!-- Full-width channel strip scroll area -->
                         <ScrollViewer x:Name="MixerScroll" Grid.Row="1"
                                       HorizontalScrollBarVisibility="Auto"
                                       VerticalScrollBarVisibility="Disabled"
@@ -245,112 +417,6 @@
                             </Grid>
                         </ScrollViewer>
                     </Grid>
-
-                    <!-- ─── RIGHT MASTER PANEL ─── -->
-                    <Border Grid.Column="1"
-                            Background="#FF0D0D0D"
-                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Margin="8">
-
-                                <!-- X AIR logo / branding -->
-                                <Border Background="#FF111111" CornerRadius="4" Padding="8,6" Margin="0,0,0,10">
-                                    <StackPanel>
-                                        <TextBlock Text="X AIR" FontFamily="{StaticResource MonoFont}"
-                                                   FontSize="18" FontWeight="Bold"
-                                                   Foreground="{StaticResource Accent}"
-                                                   HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding StatusText}"
-                                                   FontFamily="{StaticResource MonoFont}" FontSize="9"
-                                                   Foreground="{StaticResource TextSecondary}"
-                                                   HorizontalAlignment="Center" TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- MAIN LR level -->
-                                <Border Background="#FF111E11" BorderBrush="{StaticResource Accent}"
-                                        BorderThickness="1" CornerRadius="3" Padding="6" Margin="0,0,0,8">
-                                    <StackPanel>
-                                        <TextBlock Text="MAIN LR" FontFamily="{StaticResource MonoFont}"
-                                                   FontSize="10" FontWeight="Bold" Foreground="{StaticResource Accent}"
-                                                   HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                                        <Slider Style="{StaticResource VerticalFader}"
-                                                Value="{Binding MainLR.FaderLevel, Mode=TwoWay}"
-                                                Height="80" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding MainLR.FaderLevel, Converter={StaticResource DbLabel}}"
-                                                   FontFamily="{StaticResource MonoFont}" FontSize="11"
-                                                   Foreground="#FF00E676" HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- DCA GROUPS -->
-                                <Border Background="#FF111111" BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="1" CornerRadius="3" Padding="6" Margin="0,0,0,8">
-                                    <StackPanel>
-                                        <TextBlock Text="DCA GROUPS" FontFamily="{StaticResource MonoFont}"
-                                                   FontSize="9" Foreground="{StaticResource TextSecondary}"
-                                                   HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                                        <UniformGrid Columns="2" Rows="2">
-                                            <Button Content="DCA 1" Style="{StaticResource PtButton}" Margin="2"/>
-                                            <Button Content="DCA 2" Style="{StaticResource PtButton}" Margin="2"/>
-                                            <Button Content="DCA 3" Style="{StaticResource PtButton}" Margin="2"/>
-                                            <Button Content="DCA 4" Style="{StaticResource PtButton}" Margin="2"/>
-                                        </UniformGrid>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- BUS SENDS -->
-                                <Border Background="#FF111111" BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="1" CornerRadius="3" Padding="6" Margin="0,0,0,8">
-                                    <StackPanel>
-                                        <TextBlock Text="AUX / BUS" FontFamily="{StaticResource MonoFont}"
-                                                   FontSize="9" Foreground="{StaticResource TextSecondary}"
-                                                   HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                                        <Button Content="Bus 3" Style="{StaticResource PtButton}" Margin="1" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="3"/>
-                                        <Button Content="Bus 4" Style="{StaticResource PtButton}" Margin="1" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="4"/>
-                                        <Button Content="Bus 5" Style="{StaticResource PtButton}" Margin="1" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="5"/>
-                                        <Button Content="Bus 6" Style="{StaticResource PtButton}" Margin="1" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="6"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- MUTE GROUPS -->
-                                <Border Background="#FF111111" BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="1" CornerRadius="3" Padding="6" Margin="0,0,0,8">
-                                    <StackPanel>
-                                        <TextBlock Text="MUTE GROUPS" FontFamily="{StaticResource MonoFont}"
-                                                   FontSize="9" Foreground="{StaticResource TextSecondary}"
-                                                   HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                                        <UniformGrid Columns="2" Rows="2">
-                                            <Button Content="MG 1" Style="{StaticResource PtButton}" Margin="2"/>
-                                            <Button Content="MG 2" Style="{StaticResource PtButton}" Margin="2"/>
-                                            <Button Content="MG 3" Style="{StaticResource PtButton}" Margin="2"/>
-                                            <Button Content="MG 4" Style="{StaticResource PtButton}" Margin="2"/>
-                                        </UniformGrid>
-                                    </StackPanel>
-                                </Border>
-
-                                <!-- SCENE / UNDO shortcuts -->
-                                <Border Background="#FF111111" BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="1" CornerRadius="3" Padding="6">
-                                    <StackPanel>
-                                        <TextBlock Text="SCENES" FontFamily="{StaticResource MonoFont}"
-                                                   FontSize="9" Foreground="{StaticResource TextSecondary}"
-                                                   HorizontalAlignment="Center" Margin="0,0,0,5"/>
-                                        <Button Content="Save" Style="{StaticResource PtButton}" Margin="1" Command="{Binding SaveSceneCommand}"/>
-                                        <Button Content="Load" Style="{StaticResource PtButton}" Margin="1" Command="{Binding LoadSceneCommand}"/>
-                                        <Button Content="Undo" Style="{StaticResource PtButton}" Margin="1" Command="{Binding UndoCommand}"/>
-                                        <Button Content="Redo" Style="{StaticResource PtButton}" Margin="1" Command="{Binding RedoCommand}"/>
-                                        <Button Content="PANIC" FontWeight="Bold"
-                                                Style="{StaticResource PtButton}"
-                                                Command="{Binding PanicMuteCommand}"
-                                                Background="#FF3A0000" BorderBrush="#FFE53935"
-                                                Foreground="#FFE53935" Margin="1,6,1,1"/>
-                                    </StackPanel>
-                                </Border>
-
-                            </StackPanel>
-                        </ScrollViewer>
-                    </Border>
                 </Grid>
             </TabItem>
 

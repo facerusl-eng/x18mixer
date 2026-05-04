@@ -17,13 +17,19 @@
             <SolidColorBrush x:Key="BgPanel"         Color="{DynamicResource BgPanelColor}"/>
             <SolidColorBrush x:Key="BgStrip"         Color="{DynamicResource BgStripColor}"/>
             <SolidColorBrush x:Key="BgControl"       Color="{DynamicResource BgControlColor}"/>
+            <SolidColorBrush x:Key="BgHover"         Color="{DynamicResource BgHoverColor}"/>
+            <SolidColorBrush x:Key="BgPress"         Color="{DynamicResource BgPressColor}"/>
             <SolidColorBrush x:Key="BorderBrush"     Color="{DynamicResource BorderColor}"/>
+            <SolidColorBrush x:Key="BorderFocus"     Color="{DynamicResource BorderFocusColor}"/>
             <SolidColorBrush x:Key="Accent"          Color="{DynamicResource AccentColor}"/>
+            <SolidColorBrush x:Key="AccentDim"       Color="{DynamicResource AccentDimColor}"/>
+            <SolidColorBrush x:Key="AccentGlow"      Color="{DynamicResource AccentGlowColor}"/>
             <SolidColorBrush x:Key="MuteBrush"       Color="{DynamicResource MuteColor}"/>
             <SolidColorBrush x:Key="SoloBrush"       Color="{DynamicResource SoloColor}"/>
             <SolidColorBrush x:Key="SelectBrush"     Color="{DynamicResource SelectColor}"/>
             <SolidColorBrush x:Key="TextPrimary"     Color="{DynamicResource TextPrimaryColor}"/>
             <SolidColorBrush x:Key="TextSecondary"   Color="{DynamicResource TextSecondaryColor}"/>
+            <SolidColorBrush x:Key="TextDim"         Color="{DynamicResource TextDimColor}"/>
             <SolidColorBrush x:Key="FaderTrackBrush" Color="{DynamicResource FaderTrackColor}"/>
 
             <!-- ══ TYPOGRAPHY ════════════════════════════════════════════════════ -->
@@ -56,10 +62,10 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="rb" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                    <Setter TargetName="rb" Property="Background" Value="{DynamicResource BgHover}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="rb" Property="Background" Value="{DynamicResource BgPressColor}"/>
+                                    <Setter TargetName="rb" Property="Background" Value="{DynamicResource BgPress}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -78,10 +84,10 @@
                                     CornerRadius="3"/>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="tb" Property="Background" Value="{DynamicResource AccentDimColor}"/>
+                                    <Setter TargetName="tb" Property="Background" Value="{DynamicResource AccentDim}"/>
                                 </Trigger>
                                 <Trigger Property="IsDragging" Value="True">
-                                    <Setter TargetName="tb" Property="Background" Value="{DynamicResource AccentColor}"/>
+                                    <Setter TargetName="tb" Property="Background" Value="{DynamicResource Accent}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -396,10 +402,10 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsHighlighted" Value="True">
-                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHover}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource AccentGlowColor}"/>
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource AccentGlow}"/>
                                     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
@@ -454,11 +460,11 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="tbBorder" Property="Background" Value="{DynamicResource BgHoverColor}"/>
-                                                    <Setter TargetName="tbBorder" Property="BorderBrush" Value="{DynamicResource BorderFocusColor}"/>
+                                                    <Setter TargetName="tbBorder" Property="Background" Value="{DynamicResource BgHover}"/>
+                                                    <Setter TargetName="tbBorder" Property="BorderBrush" Value="{DynamicResource BorderFocus}"/>
                                                 </Trigger>
                                                 <Trigger Property="IsChecked" Value="True">
-                                                    <Setter TargetName="tbBorder" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                                    <Setter TargetName="tbBorder" Property="BorderBrush" Value="{DynamicResource Accent}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -512,11 +518,11 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHover}"/>
                                 </Trigger>
                                 <Trigger Property="IsSelected" Value="True">
-                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource AccentGlowColor}"/>
-                                    <Setter TargetName="bg" Property="BorderBrush" Value="{DynamicResource AccentColor}"/>
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource AccentGlow}"/>
+                                    <Setter TargetName="bg" Property="BorderBrush" Value="{DynamicResource Accent}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -631,10 +637,10 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsHighlighted" Value="True">
-                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHoverColor}"/>
+                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource BgHover}"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Foreground" Value="{DynamicResource TextDimColor}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextDim}"/>
                                 </Trigger>
                                 <Trigger Property="Role" Value="TopLevelHeader">
                                     <Setter TargetName="arrow" Property="Visibility" Value="Collapsed"/>

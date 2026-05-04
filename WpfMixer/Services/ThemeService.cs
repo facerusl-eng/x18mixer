@@ -79,13 +79,19 @@ public static class ThemeService
         SetBrush(res, "BgPanel",     "BgPanelColor");
         SetBrush(res, "BgStrip",     "BgStripColor");
         SetBrush(res, "BgControl",   "BgControlColor");
+        SetBrush(res, "BgHover",     "BgHoverColor");
+        SetBrush(res, "BgPress",     "BgPressColor");
         SetBrush(res, "BorderBrush", "BorderColor");
+        SetBrush(res, "BorderFocus", "BorderFocusColor");
         SetBrush(res, "Accent",      "AccentColor");
+        SetBrush(res, "AccentDim",   "AccentDimColor");
+        SetBrush(res, "AccentGlow",  "AccentGlowColor");
         SetBrush(res, "MuteBrush",   "MuteColor");
         SetBrush(res, "SoloBrush",   "SoloColor");
         SetBrush(res, "SelectBrush", "SelectColor");
         SetBrush(res, "TextPrimary",    "TextPrimaryColor");
         SetBrush(res, "TextSecondary",  "TextSecondaryColor");
+        SetBrush(res, "TextDim",        "TextDimColor");
         SetBrush(res, "FaderTrackBrush","FaderTrackColor");
     }
 

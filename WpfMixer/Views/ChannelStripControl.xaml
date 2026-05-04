@@ -1,0 +1,86 @@
+<UserControl x:Class="WpfMixer.Views.ChannelStripControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:WpfMixer.Converters"
+             Width="110">
+
+    <UserControl.Resources>
+        <conv:BoolToMuteColorConverter x:Key="MuteColor"/>
+        <conv:BoolToMuteTextConverter x:Key="MuteText"/>
+        <conv:BoolToHighlightConverter x:Key="Highlight"/>
+    </UserControl.Resources>
+
+    <Border CornerRadius="8" Padding="6"
+            BorderThickness="2"
+            BorderBrush="{Binding IsKeyHighlighted, Converter={StaticResource Highlight}}"
+            Background="#16213e">
+        <StackPanel>
+
+            <!-- Channel name (editable) -->
+            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                     Background="Transparent" Foreground="White"
+                     BorderThickness="0,0,0,1" BorderBrush="#444"
+                     FontSize="12" FontWeight="Bold"
+                     TextAlignment="Center" Margin="0,0,0,4"/>
+
+            <!-- Volume fader (vertical slider) -->
+            <Slider Orientation="Vertical" Height="160"
+                    Minimum="0" Maximum="1" Value="{Binding Volume}"
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,6"/>
+
+            <!-- Volume readout -->
+            <TextBlock Text="{Binding Volume, StringFormat={}{0:P0}}"
+                       Foreground="#aaa" FontSize="10"
+                       HorizontalAlignment="Center" Margin="0,0,0,6"/>
+
+            <!-- Mute button -->
+            <Button Content="{Binding IsMuted, Converter={StaticResource MuteText}}"
+                    Background="{Binding IsMuted, Converter={StaticResource MuteColor}}"
+                    Foreground="White" FontWeight="Bold"
+                    Padding="4,6" Cursor="Hand"
+                    Click="MuteButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- Key badge -->
+            <Border Background="#0f3460" CornerRadius="4" Padding="4,2"
+                    Margin="0,4,0,0" Cursor="Hand"
+                    MouseLeftButtonUp="KeyBadge_Click">
+                <TextBlock HorizontalAlignment="Center" FontSize="11">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text" Value="[no key]"/>
+                            <Setter Property="Foreground" Value="#666"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding AssignedKey}" Value="{x:Null}">
+                                    <Setter Property="Text" Value="[no key]"/>
+                                    <Setter Property="Foreground" Value="#666"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                    <Run Text="{Binding AssignedKey, FallbackValue='[no key]'}"/>
+                </TextBlock>
+            </Border>
+
+            <!-- Momentary toggle -->
+            <CheckBox Content="Momentary" Foreground="#999" FontSize="10"
+                      IsChecked="{Binding IsMomentaryMute}"
+                      HorizontalAlignment="Center" Margin="0,4,0,0"/>
+
+            <!-- Remove button -->
+            <Button Content="✕" Background="Transparent" Foreground="#555"
+                    BorderThickness="0" FontSize="11" Cursor="Hand"
+                    HorizontalAlignment="Right" Margin="0,4,0,0"
+                    Click="RemoveChannel_Click"/>
+        </StackPanel>
+    </Border>
+</UserControl>

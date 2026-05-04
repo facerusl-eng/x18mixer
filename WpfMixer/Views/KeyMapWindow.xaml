@@ -1,0 +1,77 @@
+<Window x:Class="WpfMixer.Views.KeyMapWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Keyboard Map" Width="480" Height="500"
+        Background="#1a1a2e" WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Channels table -->
+        <TextBlock Grid.Row="0" Text="CHANNELS" Foreground="#e94560"
+                   FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
+        <DataGrid Grid.Row="1" x:Name="ChannelGrid"
+                  AutoGenerateColumns="False"
+                  Background="#16213e" Foreground="White"
+                  RowBackground="#16213e" AlternatingRowBackground="#1a1a2e"
+                  BorderThickness="0" GridLinesVisibility="None"
+                  CanUserAddRows="False" CanUserDeleteRows="False"
+                  IsReadOnly="True" HeadersVisibility="Column">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#0f3460"/>
+                    <Setter Property="Foreground" Value="#8af"/>
+                    <Setter Property="Padding" Value="8,4"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Channel" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Key" Binding="{Binding AssignedKey, FallbackValue='—'}" Width="80"/>
+                <DataGridTextColumn Header="Mode" Binding="{Binding ModeText}" Width="90"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Mute groups table -->
+        <TextBlock Grid.Row="2" Text="MUTE GROUPS" Foreground="#e94560"
+                   FontWeight="Bold" FontSize="13" Margin="0,12,0,6"/>
+        <DataGrid Grid.Row="3" x:Name="GroupGrid"
+                  AutoGenerateColumns="False"
+                  Background="#16213e" Foreground="White"
+                  RowBackground="#16213e" AlternatingRowBackground="#1a1a2e"
+                  BorderThickness="0" GridLinesVisibility="None"
+                  CanUserAddRows="False" CanUserDeleteRows="False"
+                  IsReadOnly="True" HeadersVisibility="Column">
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#0f3460"/>
+                    <Setter Property="Foreground" Value="#8af"/>
+                    <Setter Property="Padding" Value="8,4"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Group" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Key" Binding="{Binding AssignedKey, FallbackValue='—'}" Width="80"/>
+                <DataGridTextColumn Header="Mode" Binding="{Binding ModeText}" Width="90"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Button Grid.Row="4" Content="Close" Width="80"
+                HorizontalAlignment="Right" Margin="0,12,0,0"
+                Background="#444" Foreground="White" BorderThickness="0"
+                IsCancel="True" Click="Close_Click">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="8,4">
+                        <ContentPresenter HorizontalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+    </Grid>
+</Window>

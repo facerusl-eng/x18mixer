@@ -697,6 +697,23 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         _eventBus.Publish(new ChannelChangedEvent(channelIndex, nameof(ChannelViewModel.IsMuted), vm.IsMuted));
     }
 
+    public void SendOsc(string address, string arg)
+    {
+        if (float.TryParse(arg, out var f))
+        {
+            _osc.Send(address, f);
+            return;
+        }
+
+        if (int.TryParse(arg, out var i))
+        {
+            _osc.Send(address, i);
+            return;
+        }
+
+        _osc.Send(address, arg);
+    }
+
     [RelayCommand]
     private async Task Undo()
     {

@@ -37,6 +37,25 @@ public sealed class ScriptingEngineService : IScriptingEngineService
         if (!cfg.ScriptSandboxing.Enabled)
             return new ScriptExecutionResult(false, "Script execution blocked: sandbox disabled in settings.");
 
+        if (cfg.ScriptSandboxing.UseIsolatedScriptHost)
+        {
+            var outProc = await ScriptHostProcess.ExecuteOutOfProcessAsync(
+                scriptCode,
+                cfg.LocalApiPort,
+                cfg.ApiToken,
+                cfg.ScriptSandboxing.MaxExecutionSeconds,
+                _runningScriptCts.Token);
+
+            if (outProc.Success)
+            {
+                _logging.LogInfo("Script executed successfully (isolated host).");
+                return new ScriptExecutionResult(true, outProc.Output);
+            }
+
+            _logging.LogError("Isolated script execution failed", new Exception(outProc.Error ?? outProc.Output));
+            return new ScriptExecutionResult(false, outProc.Output, outProc.Error is null ? null : new Exception(outProc.Error));
+        }
+
         var mixer = _services.GetRequiredService<MixerViewModel>();
 
         var globals = new ScriptContext
@@ -67,6 +86,11 @@ public sealed class ScriptingEngineService : IScriptingEngineService
         {
             _logging.LogError("Script execution failed", ex);
             return new ScriptExecutionResult(false, ex.Message, ex);
+        }
+        finally
+        {
+            _runningScriptCts?.Dispose();
+            _runningScriptCts = null;
         }
     }
 

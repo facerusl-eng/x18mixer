@@ -11,8 +11,8 @@ public partial class ScriptingViewModel : ObservableObject
 
     public ObservableCollection<string> ScriptLibrary { get; } =
     [
-        "// Raise lead vocal\nMixer.SetChannelFader(6, 0.78f);\nawait Delay(150);\nMixer.SetChannelMute(6, false);",
-        "// Smooth intro\nfor (int i = 0; i < 10; i++) { Mixer.SetChannelFader(1, i / 10f); await Delay(60); }"
+        "// Raise lead vocal\nawait mixer.SetFaderAsync(6, 0.78f);\nawait Task.Delay(150);\nawait mixer.SetMuteAsync(6, false);",
+        "// Smooth intro\nfor (int i = 0; i < 10; i++) { await mixer.SetFaderAsync(1, i / 10f); await Task.Delay(60); }"
     ];
 
     [ObservableProperty] private string _scriptText = "// Write C# script here";

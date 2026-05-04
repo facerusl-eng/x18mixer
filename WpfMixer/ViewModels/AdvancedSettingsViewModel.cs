@@ -16,7 +16,9 @@ public partial class AdvancedSettingsViewModel : ObservableObject
     [ObservableProperty] private int _localApiPort;
     [ObservableProperty] private string _apiToken = string.Empty;
     [ObservableProperty] private bool _allowExternalPlugins;
+    [ObservableProperty] private bool _allowPluginAutomationHooks;
     [ObservableProperty] private bool _scriptSandboxEnabled;
+    [ObservableProperty] private bool _useIsolatedScriptHost;
 
     public AdvancedSettingsViewModel(ISettingsService settings)
     {
@@ -29,7 +31,9 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         _localApiPort = _model.LocalApiPort;
         _apiToken = _model.ApiToken;
         _allowExternalPlugins = _model.PluginPermissions.AllowExternalPlugins;
+        _allowPluginAutomationHooks = _model.PluginPermissions.AllowPluginAutomationHooks;
         _scriptSandboxEnabled = _model.ScriptSandboxing.Enabled;
+        _useIsolatedScriptHost = _model.ScriptSandboxing.UseIsolatedScriptHost;
     }
 
     [RelayCommand]
@@ -41,7 +45,9 @@ public partial class AdvancedSettingsViewModel : ObservableObject
         _model.LocalApiPort = LocalApiPort;
         _model.ApiToken = ApiToken;
         _model.PluginPermissions.AllowExternalPlugins = AllowExternalPlugins;
+        _model.PluginPermissions.AllowPluginAutomationHooks = AllowPluginAutomationHooks;
         _model.ScriptSandboxing.Enabled = ScriptSandboxEnabled;
+        _model.ScriptSandboxing.UseIsolatedScriptHost = UseIsolatedScriptHost;
         _settings.SaveAppSettings(_model);
     }
 }

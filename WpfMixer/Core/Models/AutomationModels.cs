@@ -19,4 +19,13 @@ public sealed class AutomationKeyframe
 {
     public double TimeSeconds { get; set; }
     public float Value { get; set; }
+    public AutomationInterpolation Interpolation { get; set; } = AutomationInterpolation.Linear;
+}
+
+public enum AutomationInterpolation
+{
+    Hold,
+    Linear,
+    EaseIn,
+    EaseOut,
 }

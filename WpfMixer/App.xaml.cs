@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using WpfMixer.Core.Helpers;
 using WpfMixer.Core.Interfaces;
+using WpfMixer.Core.Services;
 using WpfMixer.Services;
 
 namespace WpfMixer;
@@ -12,6 +13,16 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        if (ScriptHostProcess.IsScriptHostMode(e.Args))
+        {
+            int code = ScriptHostProcess.RunAsScriptHostAsync(e.Args)
+                .GetAwaiter()
+                .GetResult();
+            Environment.ExitCode = code;
+            Shutdown(code);
+            return;
+        }
+
         base.OnStartup(e);
 
         _services = new ServiceCollection()

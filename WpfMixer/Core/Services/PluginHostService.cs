@@ -43,6 +43,12 @@ public sealed class PluginHostService : IPluginHostService
                 var asm = Assembly.LoadFrom(dll);
                 foreach (var type in asm.GetTypes().Where(t => typeof(IMixerPlugin).IsAssignableFrom(t) && !t.IsAbstract))
                 {
+                    if (!IsAllowedByPermissions(type, cfg.PluginPermissions))
+                    {
+                        _logging.LogWarning($"Plugin blocked by permissions: {type.FullName}");
+                        continue;
+                    }
+
                     if (Activator.CreateInstance(type) is not IMixerPlugin plugin) continue;
                     plugin.Initialize(_services);
                     _loaded.Add(plugin);
@@ -59,5 +65,31 @@ public sealed class PluginHostService : IPluginHostService
     public void UnloadPlugins()
     {
         _loaded.Clear();
+    }
+
+    private static bool IsAllowedByPermissions(Type pluginType, Core.Models.PluginPermissions permissions)
+    {
+        bool isUi = typeof(IUiPanelPlugin).IsAssignableFrom(pluginType);
+        bool isRemote = typeof(IRemoteEndpointPlugin).IsAssignableFrom(pluginType);
+        bool isAutomation = typeof(IAutomationHookPlugin).IsAssignableFrom(pluginType);
+        bool known = isUi || isRemote || isAutomation;
+
+        if (isUi && !permissions.AllowPluginUiPanels) return false;
+        if (isRemote && !permissions.AllowPluginRemoteEndpoints) return false;
+        if (isAutomation && !permissions.AllowPluginAutomationHooks) return false;
+
+        // Strict mode: unknown-capability plugins are blocked when any capability is disabled.
+        if (!known)
+        {
+            bool anyCapabilityRestricted =
+                !permissions.AllowPluginUiPanels ||
+                !permissions.AllowPluginRemoteEndpoints ||
+                !permissions.AllowPluginAutomationHooks;
+
+            if (anyCapabilityRestricted)
+                return false;
+        }
+
+        return true;
     }
 }

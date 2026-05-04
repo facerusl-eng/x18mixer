@@ -147,6 +147,14 @@ public sealed class LocalApiService : ILocalApiService
                 return;
             }
 
+            if (req.HttpMethod == "POST" && path == "/api/mixer/osc")
+            {
+                var body = await ReadBody<SendOscRequest>(req);
+                mixer.SendOsc(body.Address, body.Arg);
+                await WriteJson(res, new { ok = true });
+                return;
+            }
+
             if (req.HttpMethod == "POST" && path == "/api/mixer/scene/load")
             {
                 var body = await ReadBody<LoadSceneRequest>(req);

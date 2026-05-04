@@ -43,11 +43,13 @@ public class PluginPermissions
     public bool AllowExternalPlugins { get; set; } = true;
     public bool AllowPluginUiPanels { get; set; } = true;
     public bool AllowPluginRemoteEndpoints { get; set; } = false;
+    public bool AllowPluginAutomationHooks { get; set; } = false;
 }
 
 public class ScriptSandboxSettings
 {
     public bool Enabled { get; set; } = true;
+    public bool UseIsolatedScriptHost { get; set; } = true;
     public bool AllowFileSystem { get; set; } = false;
     public bool AllowNetwork { get; set; } = false;
     public int MaxExecutionSeconds { get; set; } = 15;

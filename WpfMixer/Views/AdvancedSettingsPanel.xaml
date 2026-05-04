@@ -22,7 +22,9 @@
             <TextBox Text="{Binding ApiToken, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,8"/>
 
             <CheckBox Content="Allow External Plugins" IsChecked="{Binding AllowExternalPlugins}" Margin="0,4,0,4"/>
-            <CheckBox Content="Enable Script Sandboxing" IsChecked="{Binding ScriptSandboxEnabled}" Margin="0,0,0,12"/>
+            <CheckBox Content="Allow Plugin Automation Hooks" IsChecked="{Binding AllowPluginAutomationHooks}" Margin="0,0,0,4"/>
+            <CheckBox Content="Enable Script Sandboxing" IsChecked="{Binding ScriptSandboxEnabled}" Margin="0,0,0,4"/>
+            <CheckBox Content="Use Isolated Script Host Process" IsChecked="{Binding UseIsolatedScriptHost}" Margin="0,0,0,12"/>
 
             <Button Content="Save Advanced Settings" Style="{StaticResource PtButton}" Command="{Binding SaveCommand}" Width="180"/>
         </StackPanel>

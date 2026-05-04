@@ -82,6 +82,15 @@ public sealed class AutomationEngineService : IAutomationEngineService
             var span = b.TimeSeconds - a.TimeSeconds;
             if (span <= 0.0001) return a.Value;
             var x = (float)((timeSeconds - a.TimeSeconds) / span);
+
+            x = a.Interpolation switch
+            {
+                AutomationInterpolation.Hold => 0f,
+                AutomationInterpolation.EaseIn => x * x,
+                AutomationInterpolation.EaseOut => 1f - ((1f - x) * (1f - x)),
+                _ => x,
+            };
+
             return a.Value + (b.Value - a.Value) * x;
         }
 

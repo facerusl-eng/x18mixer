@@ -219,22 +219,11 @@ public sealed partial class BusMixViewModel : ObservableObject
         _suppressBusMasterSend = true;
         try
         {
-            float current = BusMasterLevel;
-            for (int i = 0; i < 12 && version == _busMasterAnimationVersion; i++)
-            {
-                current += (target - current) * 0.35f;
-                if (Math.Abs(target - current) < 0.0025f)
-                {
-                    BusMasterLevel = target;
-                    return;
-                }
-
-                BusMasterLevel = current;
-                await Task.Delay(16);
-            }
-
-            if (version == _busMasterAnimationVersion)
-                BusMasterLevel = target;
+            await FaderSmoothing.AnimateAsync(
+                getCurrent: () => BusMasterLevel,
+                setValue: v => BusMasterLevel = v,
+                target: target,
+                isCancelled: () => version != _busMasterAnimationVersion);
         }
         finally
         {
@@ -308,22 +297,11 @@ public sealed partial class FxReturnMixSlotViewModel : ObservableObject
         _suppress = true;
         try
         {
-            float current = Level;
-            for (int i = 0; i < 12 && version == _levelAnimationVersion; i++)
-            {
-                current += (target - current) * 0.35f;
-                if (Math.Abs(target - current) < 0.0025f)
-                {
-                    Level = target;
-                    return;
-                }
-
-                Level = current;
-                await Task.Delay(16);
-            }
-
-            if (version == _levelAnimationVersion)
-                Level = target;
+            await FaderSmoothing.AnimateAsync(
+                getCurrent: () => Level,
+                setValue: v => Level = v,
+                target: target,
+                isCancelled: () => version != _levelAnimationVersion);
         }
         finally
         {

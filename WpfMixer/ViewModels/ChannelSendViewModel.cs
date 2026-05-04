@@ -86,22 +86,11 @@ public sealed partial class ChannelSendViewModel : ObservableObject
         _suppress = true;
         try
         {
-            float current = SendLevel;
-            for (int i = 0; i < 12 && version == _levelAnimationVersion; i++)
-            {
-                current += (target - current) * 0.35f;
-                if (Math.Abs(target - current) < 0.0025f)
-                {
-                    SendLevel = target;
-                    return;
-                }
-
-                SendLevel = current;
-                await Task.Delay(16);
-            }
-
-            if (version == _levelAnimationVersion)
-                SendLevel = target;
+            await FaderSmoothing.AnimateAsync(
+                getCurrent: () => SendLevel,
+                setValue: v => SendLevel = v,
+                target: target,
+                isCancelled: () => version != _levelAnimationVersion);
         }
         finally
         {

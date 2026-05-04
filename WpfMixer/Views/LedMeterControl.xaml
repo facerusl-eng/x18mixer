@@ -1,15 +1,15 @@
 <UserControl x:Class="WpfMixer.Views.LedMeterControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Width="12" MinHeight="120">
+             Width="16" MinHeight="120">
     <Grid>
-        <Canvas x:Name="MeterCanvas" Background="#FF111111" Width="10" HorizontalAlignment="Left"/>
+        <Canvas x:Name="MeterCanvas" Background="#FF0A0A0A" Width="14" HorizontalAlignment="Left"/>
         <!-- Peak hold bar -->
-        <Rectangle x:Name="PeakBar" Width="10" Height="2"
+        <Rectangle x:Name="PeakBar" Width="14" Height="2"
                    HorizontalAlignment="Left" VerticalAlignment="Top"
                    Fill="White" Opacity="0.85" Visibility="Collapsed"/>
         <!-- Clip LED at top -->
-        <Rectangle x:Name="ClipLed" Width="10" Height="5"
+        <Rectangle x:Name="ClipLed" Width="14" Height="5"
                    HorizontalAlignment="Left" VerticalAlignment="Top"
                    Fill="#FF3A0A0A" Margin="0,0,0,0"/>
     </Grid>

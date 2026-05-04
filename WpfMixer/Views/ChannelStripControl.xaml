@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:conv="clr-namespace:WpfMixer.Converters"
              xmlns:views="clr-namespace:WpfMixer.Views"
-             Width="72" MinHeight="420">
+             Width="74">
 
     <UserControl.Resources>
         <conv:BoolToMuteColorConverter  x:Key="MuteColor"/>
@@ -71,7 +71,7 @@
             <Grid Grid.Row="3" Margin="4,6">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>    <!-- Fader -->
-                    <ColumnDefinition Width="12"/>   <!-- Meter -->
+                    <ColumnDefinition Width="16"/>   <!-- Meter -->
                 </Grid.ColumnDefinitions>
 
                 <!-- Fader scale marks -->
@@ -89,11 +89,11 @@
             </Grid>
 
             <!-- ── Row 4: dB readout ── -->
-            <Border Grid.Row="4" Background="#FF111111"
+            <Border Grid.Row="4" Background="#FF0D0D0D"
                     BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0">
                 <TextBlock Text="{Binding FaderLevel, Converter={StaticResource DbLabel}}"
-                           FontFamily="{StaticResource MonoFont}" FontSize="11"
-                           Foreground="#FF00C853"
+                           FontFamily="{StaticResource MonoFont}" FontSize="12"
+                           Foreground="#FF00E676"
                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
 

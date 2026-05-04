@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:WpfMixer.Views"
         xmlns:conv="clr-namespace:WpfMixer.Converters"
-        Title="X Air Mixer Controller" Height="680" Width="1400"
-        MinWidth="900" MinHeight="500"
+        Title="X AIR X18" Height="760" Width="1440"
+        WindowState="Maximized"
+        MinWidth="900" MinHeight="540"
         Background="{StaticResource BgDeep}"
         PreviewKeyDown="Window_PreviewKeyDown"
         PreviewKeyUp="Window_PreviewKeyUp"
@@ -17,15 +18,15 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="42"/>
+            <RowDefinition Height="38"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="28"/>
+            <RowDefinition Height="22"/>
         </Grid.RowDefinitions>
 
         <!-- TOOLBAR -->
-        <Border Grid.Row="0" Background="#FF111111"
+        <Border Grid.Row="0" Background="#FF0D0D0D"
                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
-            <DockPanel Margin="8,4">
+            <DockPanel Margin="6,3">
                 <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
                     <TextBlock Text="X AIR" FontSize="16" FontWeight="Bold"
                                Foreground="#FF1DB954" VerticalAlignment="Center" Margin="0,0,12,0"/>
@@ -115,7 +116,7 @@
                     <Setter Property="Background" Value="{StaticResource BgPanel}" />
                     <Setter Property="Foreground" Value="{StaticResource TextSecondary}" />
                     <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-                    <Setter Property="Padding" Value="16,6" />
+                    <Setter Property="Padding" Value="12,5" />
                     <Setter Property="FontFamily" Value="{StaticResource MonoFont}" />
                     <Setter Property="FontSize" Value="11" />
                     <Style.Triggers>
@@ -130,42 +131,42 @@
             <!-- ─── MIXER TAB ─── -->
             <TabItem Header="MIXER">
                 <Grid>
-                    <!-- Normal mode -->
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
-                                  Background="{StaticResource BgDeep}">
-                        <ScrollViewer.Style>
-                            <Style TargetType="ScrollViewer">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsPerformanceMode}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ScrollViewer.Style>
-                        <StackPanel Margin="8,8">
-                            <Border Background="#FF13261B" BorderBrush="{StaticResource Accent}" BorderThickness="1" CornerRadius="4" Padding="8,5" Margin="0,0,0,8">
-                                <DockPanel>
-                                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-                                        <TextBlock Text="SOF" Foreground="{StaticResource Accent}" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                        <Button Content="BUS 1" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="1" Margin="0,0,4,0"/>
-                                        <Button Content="BUS 2" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="2" Margin="0,0,4,0"/>
-                                        <Button Content="BUS 3" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="3" Margin="0,0,4,0"/>
-                                        <Button Content="BUS 4" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="4" Margin="0,0,4,0"/>
-                                        <Button Content="BUS 5" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="5" Margin="0,0,4,0"/>
-                                        <Button Content="BUS 6" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="6" Margin="0,0,8,0"/>
-                                        <TextBlock Text="{Binding SelectedSofBusIndex, StringFormat=Bus {0}}" Foreground="{StaticResource Accent}" FontFamily="{StaticResource MonoFont}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                        <Button Content="ENTER SOF" Style="{StaticResource PtButton}" Command="{Binding BusMix.EnterSofCommand}" Margin="0,0,4,0"/>
-                                        <Button Content="EXIT SOF" Style="{StaticResource PtButton}" Command="{Binding BusMix.ExitSofCommand}"/>
-                                    </StackPanel>
-                                </DockPanel>
-                            </Border>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                            <Grid>
-                                <Grid.Style>
-                                    <Style TargetType="Grid">
+                    <!-- SOF Selector Bar -->
+                    <Border Grid.Row="0" Background="#FF13261B" BorderBrush="{StaticResource Accent}"
+                            BorderThickness="1" CornerRadius="4" Padding="8,4" Margin="6,5,6,3">
+                        <DockPanel>
+                            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                                <TextBlock Text="SOF" Foreground="{StaticResource Accent}" FontFamily="{StaticResource MonoFont}" FontWeight="Bold" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                <Button Content="BUS 1" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="1" Margin="0,0,4,0"/>
+                                <Button Content="BUS 2" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="2" Margin="0,0,4,0"/>
+                                <Button Content="BUS 3" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="3" Margin="0,0,4,0"/>
+                                <Button Content="BUS 4" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="4" Margin="0,0,4,0"/>
+                                <Button Content="BUS 5" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="5" Margin="0,0,4,0"/>
+                                <Button Content="BUS 6" Style="{StaticResource PtButton}" Command="{Binding BusMix.SelectBusCommand}" CommandParameter="6" Margin="0,0,8,0"/>
+                                <TextBlock Text="{Binding SelectedSofBusIndex, StringFormat=Bus {0}}" Foreground="{StaticResource Accent}" FontFamily="{StaticResource MonoFont}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <Button Content="ENTER SOF" Style="{StaticResource PtButton}" Command="{Binding BusMix.EnterSofCommand}" Margin="0,0,4,0"/>
+                                <Button Content="EXIT SOF" Style="{StaticResource PtButton}" Command="{Binding BusMix.ExitSofCommand}"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+
+                    <!-- Full-height channel strip scroll area -->
+                    <ScrollViewer x:Name="MixerScroll" Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  Background="{StaticResource BgDeep}">
+                        <Grid>
+                            <!-- Normal mix (IsSofActive = False) -->
+                            <StackPanel Orientation="Horizontal" Margin="4,0">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
                                         <Setter Property="Visibility" Value="Visible"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsSofActive}" Value="True">
@@ -173,28 +174,31 @@
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </Grid.Style>
-                                <StackPanel Orientation="Horizontal">
-                                    <!-- 18 input channel strips (ChannelViewModel) -->
-                                    <ItemsControl ItemsSource="{Binding ChannelViewModels}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <views:ChannelStripControl DataContext="{Binding}" Margin="1,0"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                    <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
-                                    <!-- Main LR strip -->
-                                    <views:ChannelStripControl DataContext="{Binding MainLR}" Width="80" Margin="2,0"/>
-                                </StackPanel>
-                            </Grid>
+                                </StackPanel.Style>
+                                <!-- 18 input channel strips -->
+                                <ItemsControl ItemsSource="{Binding ChannelViewModels}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <views:ChannelStripControl DataContext="{Binding}"
+                                                Height="{Binding ViewportHeight, ElementName=MixerScroll}"
+                                                Margin="1,0"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
+                                <!-- Main LR strip -->
+                                <views:ChannelStripControl DataContext="{Binding MainLR}" Width="82"
+                                    Height="{Binding ViewportHeight, ElementName=MixerScroll}"
+                                    Margin="2,0"/>
+                            </StackPanel>
 
-                            <Grid>
-                                <Grid.Style>
-                                    <Style TargetType="Grid">
+                            <!-- SOF mix (IsSofActive = True) -->
+                            <StackPanel Orientation="Horizontal" Margin="4,0">
+                                <StackPanel.Style>
+                                    <Style TargetType="StackPanel">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsSofActive}" Value="True">
@@ -202,31 +206,31 @@
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </Grid.Style>
-                                <StackPanel Orientation="Horizontal">
-                                    <ItemsControl ItemsSource="{Binding BusMix.ChannelSends}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <views:BusSendStripControl Margin="1,0"/>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                    <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
-                                    <Border Background="{StaticResource BgStrip}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Width="92" Margin="2,0" Padding="8">
-                                        <StackPanel>
-                                            <TextBlock Text="BUS MASTER" HorizontalAlignment="Center" FontFamily="{StaticResource MonoFont}" FontWeight="Bold"/>
-                                            <Slider Style="{StaticResource VerticalFader}" Value="{Binding BusMix.BusMasterLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                            <ToggleButton IsChecked="{Binding BusMix.BusMasterMute, Mode=TwoWay}" Content="MUTE" Margin="0,6,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-                        </StackPanel>
+                                </StackPanel.Style>
+                                <ItemsControl ItemsSource="{Binding BusMix.ChannelSends}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <views:BusSendStripControl Margin="1,0"
+                                                Height="{Binding ViewportHeight, ElementName=MixerScroll}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Border Width="2" Background="{StaticResource BorderBrush}" Margin="6,4"/>
+                                <Border Background="{StaticResource BgStrip}" BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1" Width="92" Margin="2,0" Padding="8"
+                                        Height="{Binding ViewportHeight, ElementName=MixerScroll}">
+                                    <StackPanel>
+                                        <TextBlock Text="BUS MASTER" HorizontalAlignment="Center" FontFamily="{StaticResource MonoFont}" FontWeight="Bold"/>
+                                        <Slider Style="{StaticResource VerticalFader}" Value="{Binding BusMix.BusMasterLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <ToggleButton IsChecked="{Binding BusMix.BusMasterMute, Mode=TwoWay}" Content="MUTE" Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
                     </ScrollViewer>
-
                 </Grid>
             </TabItem>
 

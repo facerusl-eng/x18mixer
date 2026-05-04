@@ -40,6 +40,12 @@ public class MixerModel : ObservableObject
     /// <summary>USB routing configuration.</summary>
     public UsbConfig Usb { get; set; } = new();
 
+    /// <summary>Aggregate output routing model.</summary>
+    public OutputRoutingModel OutputRoutingModel { get; set; } = new();
+
+    /// <summary>Aggregate USB routing model.</summary>
+    public UsbRoutingModel UsbRoutingModel { get; set; } = new();
+
     /// <summary>All channels in display order: inputs + FX returns + main.</summary>
     [JsonIgnore]
     public IEnumerable<Channel> AllChannels =>
@@ -101,6 +107,11 @@ public class MixerModel : ObservableObject
             model.Outputs.Add(new OutputRoute { OutputIndex = i, Label = $"AUX {i}", Source = (OutputSource)(i - 1 < 6 ? OutputSource.Bus1 + i - 1 : OutputSource.Main) });
         model.Outputs.Add(new OutputRoute { OutputIndex = 7, Label = "PHONES", Source = OutputSource.Main });
         model.Outputs.Add(new OutputRoute { OutputIndex = 8, Label = "MAIN LR", Source = OutputSource.Main });
+
+        model.OutputRoutingModel.Outputs = model.Outputs;
+        model.UsbRoutingModel.Mode = model.Usb.Mode;
+        model.UsbRoutingModel.SendAssignments = model.Usb.SendAssignments;
+        model.UsbRoutingModel.ReturnAssignments = model.Usb.ReturnAssignments;
 
         return model;
     }

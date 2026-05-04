@@ -67,6 +67,10 @@ public class Channel : ObservableObject
     private bool _sendToLr = true;
     public bool SendToLr { get => _sendToLr; set => SetProperty(ref _sendToLr, value); }
 
+    // ── Routing: Direct out source ────────────────────────────────────────────
+    private OutputSource _directOutSource = OutputSource.DirectOut;
+    public OutputSource DirectOutSource { get => _directOutSource; set => SetProperty(ref _directOutSource, value); }
+
     // ── Routing: Bus + FX sends (10 total: bus 1-6, fx 1-4) ─────────────────
     public ObservableCollection<BusSend> BusSends { get; set; } = [];
 

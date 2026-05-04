@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -59,5 +60,21 @@ public class UsbConfig : ObservableObject
     public int[] SendAssignments { get; set; } = new int[18];
 
     /// <summary>Which USB return slot feeds which channel (index = channel 0-17, value = USB slot 1-18 or 0=off)</summary>
+    public int[] ReturnAssignments { get; set; } = new int[18];
+}
+
+/// <summary>Container model for output routing state.</summary>
+public class OutputRoutingModel : ObservableObject
+{
+    public ObservableCollection<OutputRoute> Outputs { get; set; } = [];
+}
+
+/// <summary>Container model for USB routing state.</summary>
+public class UsbRoutingModel : ObservableObject
+{
+    private UsbMode _mode = UsbMode.Multitrack;
+    public UsbMode Mode { get => _mode; set => SetProperty(ref _mode, value); }
+
+    public int[] SendAssignments { get; set; } = new int[18];
     public int[] ReturnAssignments { get; set; } = new int[18];
 }

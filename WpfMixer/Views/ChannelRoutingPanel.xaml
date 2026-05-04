@@ -100,7 +100,36 @@
                                      FontFamily="{StaticResource MonoFont}" FontSize="10"
                                      Height="20" TextAlignment="Center" />
                         </Grid>
+
+                        <!-- USB return number -->
+                        <Grid Margin="0,3,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="USB:" Grid.Column="0" Margin="0,0,4,0"
+                                       Style="{StaticResource SectionLabel}" VerticalAlignment="Center" />
+                            <TextBox Grid.Column="1" Text="{Binding UsbReturn, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                     Background="{StaticResource BgControl}"
+                                     Foreground="{StaticResource TextSecondary}"
+                                     BorderBrush="{StaticResource BorderBrush}"
+                                     FontFamily="{StaticResource MonoFont}" FontSize="10"
+                                     Height="20" TextAlignment="Center" />
+                        </Grid>
                     </StackPanel>
+                </Border>
+
+                <!-- ════ DIRECT OUT ROUTING ════ -->
+                <TextBlock Text="DIRECT OUT" Style="{StaticResource SectionLabel}" />
+                <Border Background="{StaticResource BgPanel}" Margin="4,0,4,4"
+                        CornerRadius="2" Padding="4,3">
+                    <ComboBox SelectedItem="{Binding DirectOutSource, Mode=TwoWay}"
+                              ItemsSource="{x:Static local:ChannelRoutingPanel.OutputSources}"
+                              FontFamily="{StaticResource MonoFont}" FontSize="9"
+                              Background="{StaticResource BgControl}"
+                              Foreground="{StaticResource TextSecondary}"
+                              BorderBrush="{StaticResource BorderBrush}"
+                              Height="22" />
                 </Border>
 
                 <!-- ════ MAIN LR SEND ════ -->

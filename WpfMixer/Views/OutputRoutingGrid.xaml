@@ -47,7 +47,7 @@
         </Border>
 
         <!-- Output rows -->
-        <ItemsControl Grid.Row="1" ItemsSource="{Binding Mixer.Outputs}">
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Outputs}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:OutputRoute}">
                     <Border Background="{StaticResource BgStrip}"

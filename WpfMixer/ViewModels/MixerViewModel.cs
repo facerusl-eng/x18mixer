@@ -22,6 +22,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     public ObservableCollection<ChannelViewModel> ChannelViewModels { get; } = [];
     public MainBusViewModel MainLR { get; }
     public FxRackViewModel FxRack { get; }
+    [ObservableProperty] private RoutingViewModel _routing;
 
     // ── Routing / scene model (used by routing panel & scene save) ────────────
     [ObservableProperty] private MixerModel _mixer = MixerModel.CreateDefault();
@@ -48,6 +49,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
             ChannelViewModels.Add(new ChannelViewModel(model, _osc));
         MainLR = new MainBusViewModel(new MainBusModel(), _osc);
         FxRack = new FxRackViewModel(Mixer, _osc);
+        _routing = new RoutingViewModel(Mixer, _osc);
 
         // ── Keyboard / routing (uses legacy Channel model) ───────────────────
         KeyboardService = new KeyboardService();
@@ -64,8 +66,6 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         // Wire routing-model property changes → OSC (legacy)
         foreach (var ch in Mixer.AllChannels)
             WireChannel(ch);
-        foreach (var output in Mixer.Outputs)
-            WireOutput(output);
 
         Mixer.InputChannels.CollectionChanged += (_, _) => RebindKeyboard();
         Mixer.MuteGroups.CollectionChanged    += (_, _) => RebindKeyboard();
@@ -125,6 +125,10 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
             // ── FX rack ──────────────────────────────────────────────────────
             if (FxRack.ApplyOscMessage(address, args))
+                return;
+
+            // ── Dedicated routing VMs (output/USB matrix) ───────────────────
+            if (Routing.ApplyOscMessage(address, args))
                 return;
 
             // ── Routing / output model (legacy) ──────────────────────────────
@@ -242,6 +246,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
                 ch.SendToLr = lr == 1;
             else if (address.EndsWith("/config/source") && args.Length > 0 && args[0] is int src)
                 ApplyInputSource(ch, src);
+            else if (address.EndsWith("/config/directout") && args.Length > 0 && args[0] is int direct)
+                ch.DirectOutSource = (OutputSource)Math.Clamp(direct, 0, (int)OutputSource.DirectOut);
             else
                 TryApplyBusSend(ch, address, args);
             return;
@@ -251,7 +257,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         var output = Mixer.Outputs.FirstOrDefault(o => address.StartsWith(o.OscBase));
         if (output != null)
         {
-            if (address.EndsWith("/src") && args.Length > 0 && args[0] is int osrc)
+            if (address.EndsWith("/source") && args.Length > 0 && args[0] is int osrc)
                 output.Source = (OutputSource)Math.Clamp(osrc, 0, (int)OutputSource.DirectOut);
             else if (address.EndsWith("/level") && args.Length > 0 && args[0] is float ol)
                 output.Level = ol;
@@ -260,10 +266,11 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
     private static void ApplyInputSource(Channel ch, int src)
     {
-        if (src == 0) { ch.InputSource = InputSource.Off; return; }
-        if (src <= 18) { ch.InputSource = InputSource.Analog; ch.AnalogInput = src; return; }
-        ch.InputSource = InputSource.UsbReturn;
-        ch.UsbReturn = src - 18;
+        // Requested routing mode mapping:
+        // 0 = Analog, 1 = USB, 2 = Off
+        if (src == 0) { ch.InputSource = InputSource.Analog; return; }
+        if (src == 1) { ch.InputSource = InputSource.UsbReturn; return; }
+        ch.InputSource = InputSource.Off;
     }
 
     private static void TryApplyBusSend(Channel ch, string address, object[] args)
@@ -313,6 +320,9 @@ public partial class MixerViewModel : ObservableObject, IDisposable
                 case nameof(Channel.UsbReturn):
                     SendInputSource(ch);
                     break;
+                case nameof(Channel.DirectOutSource):
+                    _osc.Send($"{ch.OscBase}/config/directout", (int)ch.DirectOutSource);
+                    break;
             }
         };
 
@@ -350,7 +360,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
             switch (e.PropertyName)
             {
                 case nameof(OutputRoute.Source):
-                    _osc.Send($"{output.OscBase}/src", output.OscSourceIndex);
+                    _osc.Send($"{output.OscBase}/source", output.OscSourceIndex);
                     break;
                 case nameof(OutputRoute.Level):
                     _osc.Send($"{output.OscBase}/level", (float)output.Level);
@@ -362,13 +372,14 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     private void SendInputSource(Channel ch)
     {
         if (!IsConnected) return;
-        // X Air /ch/XX/config/source: 0=Off, 1-18=Analog 1-18, 19-36=USB return 1-18
+        // Requested routing mode mapping:
+        // 0=Analog, 1=USB, 2=Off
         int src = ch.InputSource switch
         {
-            InputSource.Off => 0,
-            InputSource.Analog => ch.AnalogInput,
-            InputSource.UsbReturn => 18 + ch.UsbReturn,
-            _ => 0
+            InputSource.Analog => 0,
+            InputSource.UsbReturn => 1,
+            InputSource.Off => 2,
+            _ => 2
         };
         _osc.Send($"{ch.OscBase}/config/source", src);
     }
@@ -387,15 +398,18 @@ public partial class MixerViewModel : ObservableObject, IDisposable
 
     [RelayCommand]
     private void SetOutputSource(OutputRoute output) =>
-        _osc.Send($"{output.OscBase}/src", output.OscSourceIndex);
+        _osc.Send($"{output.OscBase}/source", output.OscSourceIndex);
 
     // ── Routing: request state from mixer ────────────────────────────────────
 
     private void RequestRoutingState()
     {
+        Routing.RequestState();
+
         foreach (var ch in Mixer.AllChannels)
         {
             _osc.Send($"{ch.OscBase}/config/source");
+            _osc.Send($"{ch.OscBase}/config/directout");
             _osc.Send($"{ch.OscBase}/mix/lr");
             foreach (var s in ch.BusSends)
             {
@@ -407,7 +421,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         }
         foreach (var out_ in Mixer.Outputs)
         {
-            _osc.Send($"{out_.OscBase}/src");
+            _osc.Send($"{out_.OscBase}/source");
             _osc.Send($"{out_.OscBase}/level");
         }
     }
@@ -506,6 +520,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         var loaded = _sceneService.LoadScene(dlg.FileName);
         if (loaded == null) return;
         Mixer = loaded;
+        Routing = new RoutingViewModel(Mixer, _osc);
         FxRack.RebindModels(Mixer);
         OnPropertyChanged(nameof(Channels));
         OnPropertyChanged(nameof(MuteGroups));

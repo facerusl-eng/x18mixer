@@ -96,12 +96,17 @@
 
         <!-- ═══════════════ TAB 2: OUTPUT ROUTING ═══════════════ -->
         <TabItem Header="OUTPUT ROUTING">
-            <local:OutputRoutingGrid DataContext="{Binding}" />
+            <local:OutputRoutingGrid DataContext="{Binding Routing.OutputRouting}" />
         </TabItem>
 
-        <!-- ═══════════════ TAB 3: USB ROUTING ═══════════════ -->
+        <!-- ═══════════════ TAB 3: ROUTING MATRIX ═══════════════ -->
+        <TabItem Header="ROUTING MATRIX">
+            <local:RoutingMatrixView DataContext="{Binding Routing.Matrix}" />
+        </TabItem>
+
+        <!-- ═══════════════ TAB 4: USB ROUTING ═══════════════ -->
         <TabItem Header="USB ROUTING">
-            <local:UsbRoutingGrid DataContext="{Binding}" />
+            <local:UsbRoutingGrid DataContext="{Binding Routing.UsbRouting}" />
         </TabItem>
 
     </TabControl>

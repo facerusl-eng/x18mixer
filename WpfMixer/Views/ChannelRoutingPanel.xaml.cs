@@ -13,6 +13,9 @@ public partial class ChannelRoutingPanel : UserControl
     public static readonly InputSource[] InputSources =
         Enum.GetValues<InputSource>();
 
+    public static readonly OutputSource[] OutputSources =
+        Enum.GetValues<OutputSource>();
+
     // Converters used inline in XAML DataTriggers to filter Bus vs FX sends
     public static readonly IValueConverter IsBusConverter = new BusIndexConverter(false);
     public static readonly IValueConverter IsFxConverter  = new BusIndexConverter(true);

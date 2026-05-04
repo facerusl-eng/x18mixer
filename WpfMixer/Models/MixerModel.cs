@@ -26,6 +26,12 @@ public class MixerModel : ObservableObject
         Volume = 0.75,
     };
 
+    /// <summary>FX engine slots 1-4.</summary>
+    public FxSlotModel Fx1 { get; set; } = new(1);
+    public FxSlotModel Fx2 { get; set; } = new(2);
+    public FxSlotModel Fx3 { get; set; } = new(3);
+    public FxSlotModel Fx4 { get; set; } = new(4);
+
     public ObservableCollection<MuteGroup> MuteGroups { get; set; } = [];
 
     /// <summary>Physical output routing: aux 1-6, phones (7), main (8).</summary>
@@ -84,6 +90,11 @@ public class MixerModel : ObservableObject
 
         model.MainLR.BusSends.Clear();
         foreach (var s in CreateDefaultBusSends()) model.MainLR.BusSends.Add(s);
+
+        model.Fx1 = new FxSlotModel(1);
+        model.Fx2 = new FxSlotModel(2);
+        model.Fx3 = new FxSlotModel(3);
+        model.Fx4 = new FxSlotModel(4);
 
         // Outputs
         for (int i = 1; i <= 6; i++)

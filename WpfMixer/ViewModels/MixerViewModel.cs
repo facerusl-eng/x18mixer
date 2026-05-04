@@ -21,6 +21,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     // ── Core mixer model / viewmodels (clean MVVM layer) ──────────────────────
     public ObservableCollection<ChannelViewModel> ChannelViewModels { get; } = [];
     public MainBusViewModel MainLR { get; }
+    public FxRackViewModel FxRack { get; }
 
     // ── Routing / scene model (used by routing panel & scene save) ────────────
     [ObservableProperty] private MixerModel _mixer = MixerModel.CreateDefault();
@@ -46,6 +47,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         foreach (var model in ChannelModel.CreateDefaults())
             ChannelViewModels.Add(new ChannelViewModel(model, _osc));
         MainLR = new MainBusViewModel(new MainBusModel(), _osc);
+        FxRack = new FxRackViewModel(Mixer, _osc);
 
         // ── Keyboard / routing (uses legacy Channel model) ───────────────────
         KeyboardService = new KeyboardService();
@@ -120,6 +122,10 @@ public partial class MixerViewModel : ObservableObject, IDisposable
                 MainLR.ApplyOscMessage(address, args);
                 return;
             }
+
+            // ── FX rack ──────────────────────────────────────────────────────
+            if (FxRack.ApplyOscMessage(address, args))
+                return;
 
             // ── Routing / output model (legacy) ──────────────────────────────
             HandleRoutingOsc(address, args);
@@ -201,6 +207,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         // Main LR
         _osc.Send($"{MainBusModel.OscBase}/mix/fader");
         _osc.Send($"{MainBusModel.OscBase}/mix/on");
+        // FX rack
+        FxRack.RequestState();
         // Legacy routing model channels
         foreach (var ch in Mixer.AllChannels)
         {
@@ -498,6 +506,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         var loaded = _sceneService.LoadScene(dlg.FileName);
         if (loaded == null) return;
         Mixer = loaded;
+        FxRack.RebindModels(Mixer);
         OnPropertyChanged(nameof(Channels));
         OnPropertyChanged(nameof(MuteGroups));
         RebindKeyboard();

@@ -175,6 +175,11 @@
                 </Grid>
             </TabItem>
 
+            <!-- ─── FX RACK TAB ─── -->
+            <TabItem Header="FX RACK">
+                <views:FxRackView DataContext="{Binding FxRack}" />
+            </TabItem>
+
             <!-- ─── ROUTING TAB ─── -->
             <TabItem Header="ROUTING">
                 <views:RoutingView DataContext="{Binding}" />

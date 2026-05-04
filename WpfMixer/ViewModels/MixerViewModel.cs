@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -14,9 +15,14 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     private readonly OscClient _osc = new();
     private readonly DiscoveryService _discovery = new();
     private readonly SceneService _sceneService = new();
+    private readonly UndoRedoService _undoRedo = new(50);
+    private readonly SceneTransitionService _sceneTransition;
     public readonly KeyboardService KeyboardService;
 
     private System.Timers.Timer? _overlayTimer;
+    private bool _suppressHistory;
+    private System.Timers.Timer? _historyDebounce;
+    private string _pendingHistoryReason = "Edit";
 
     // ── Core mixer model / viewmodels (clean MVVM layer) ──────────────────────
     public ObservableCollection<ChannelViewModel> ChannelViewModels { get; } = [];
@@ -25,6 +31,7 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     [ObservableProperty] private RoutingViewModel _routing;
     [ObservableProperty] private BusMixViewModel _busMix;
     [ObservableProperty] private MonitorMixViewModel _monitorMix;
+    [ObservableProperty] private SceneManagerViewModel _sceneManager;
 
     public bool IsSofActive => BusMix.IsSofActive;
     public int SelectedSofBusIndex => BusMix.SelectedBusIndex;
@@ -49,6 +56,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     // ── Constructor ──────────────────────────────────────────────────────────
     public MixerViewModel()
     {
+        _sceneTransition = new SceneTransitionService(_osc);
+
         // ── Core ChannelViewModels (18 channels + main LR) ───────────────────
         foreach (var model in ChannelModel.CreateDefaults())
             ChannelViewModels.Add(new ChannelViewModel(model, _osc));
@@ -57,7 +66,14 @@ public partial class MixerViewModel : ObservableObject, IDisposable
         _routing = new RoutingViewModel(Mixer, _osc);
         _busMix = new BusMixViewModel(Mixer, _osc);
         _monitorMix = new MonitorMixViewModel(_busMix);
+        _sceneManager = new SceneManagerViewModel(
+            _sceneService,
+            () => Mixer,
+            scene => ApplySceneModelAsync(scene));
         WireBusMix(_busMix);
+
+        _historyDebounce = new System.Timers.Timer(300) { AutoReset = false };
+        _historyDebounce.Elapsed += HistoryDebounceElapsed;
 
         // ── Keyboard / routing (uses legacy Channel model) ───────────────────
         KeyboardService = new KeyboardService();
@@ -338,6 +354,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
                     _osc.Send($"{ch.OscBase}/config/directout", (int)ch.DirectOutSource);
                     break;
             }
+
+            QueueHistorySnapshot($"Channel {ch.Name} changed");
         };
 
         // Wire bus sends
@@ -363,6 +381,8 @@ public partial class MixerViewModel : ObservableObject, IDisposable
                     _osc.Send($"{path}/pre", send.IsPre ? 1 : 0);
                     break;
             }
+
+            QueueHistorySnapshot($"Send {ch.Name}/{send.Label} changed");
         };
     }
 
@@ -523,36 +543,63 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     private void SaveScene()
     {
         var dlg = new SaveFileDialog { Filter = "Scene (*.json)|*.json", FileName = "scene.json" };
-        if (dlg.ShowDialog() == true) _sceneService.SaveScene(Mixer, dlg.FileName);
+        if (dlg.ShowDialog() != true) return;
+
+        var name = Path.GetFileNameWithoutExtension(dlg.FileName);
+        var scene = new SceneModel
+        {
+            Name = string.IsNullOrWhiteSpace(name) ? "scene" : name,
+            Timestamp = DateTime.UtcNow,
+            Snapshot = _sceneService.CloneMixer(Mixer)
+        };
+
+        var json = System.Text.Json.JsonSerializer.Serialize(scene, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(dlg.FileName, json);
+        SceneManager.RefreshScenesCommand.Execute(null);
+        StatusText = $"Saved scene: {scene.Name}";
     }
 
     [RelayCommand]
-    private void LoadScene()
+    private async Task LoadScene()
     {
         var dlg = new OpenFileDialog { Filter = "Scene (*.json)|*.json" };
         if (dlg.ShowDialog() != true) return;
-        var loaded = _sceneService.LoadScene(dlg.FileName);
-        if (loaded == null) return;
-        Mixer = loaded;
-        Routing = new RoutingViewModel(Mixer, _osc);
-        BusMix = new BusMixViewModel(Mixer, _osc);
-        MonitorMix = new MonitorMixViewModel(BusMix);
-        WireBusMix(BusMix);
-        FxRack.RebindModels(Mixer);
-        OnPropertyChanged(nameof(Channels));
-        OnPropertyChanged(nameof(MuteGroups));
-        OnPropertyChanged(nameof(IsSofActive));
-        OnPropertyChanged(nameof(SelectedSofBusIndex));
-        RebindKeyboard();
+
+        var scene = _sceneService.LoadSceneModel(dlg.FileName);
+        if (scene is null)
+        {
+            StatusText = "Failed to load scene file.";
+            return;
+        }
+
+        await ApplySceneModelAsync(scene);
+        SceneManager.RefreshScenesCommand.Execute(null);
     }
 
-    [RelayCommand] private void Undo() { var m = _sceneService.Undo(Mixer); if (m != null) { Mixer = m; RebindKeyboard(); } }
-    [RelayCommand] private void Redo() { var m = _sceneService.Redo(Mixer); if (m != null) { Mixer = m; RebindKeyboard(); } }
+    [RelayCommand]
+    private async Task Undo()
+    {
+        var snapshot = _undoRedo.Undo(Mixer);
+        if (snapshot is null) return;
+        await ApplySceneModelAsync(snapshot, pushCurrentToUndo: false, makeBackupBeforeLoad: false);
+    }
+
+    [RelayCommand]
+    private async Task Redo()
+    {
+        var snapshot = _undoRedo.Redo(Mixer);
+        if (snapshot is null) return;
+        await ApplySceneModelAsync(snapshot, pushCurrentToUndo: false, makeBackupBeforeLoad: false);
+    }
 
     // ── Preset ───────────────────────────────────────────────────────────────
 
     [RelayCommand]
-    private void ApplyPreset(string name) => SceneService.ApplyPreset(Mixer, name);
+    private void ApplyPreset(string name)
+    {
+        SceneService.ApplyPreset(Mixer, name);
+        QueueHistorySnapshot($"Preset {name}");
+    }
 
     // ── Performance mode ─────────────────────────────────────────────────────
 
@@ -564,6 +611,63 @@ public partial class MixerViewModel : ObservableObject, IDisposable
     private void RebindKeyboard()
     {
         KeyboardService.Bind(Mixer.InputChannels, Mixer.MuteGroups);
+    }
+
+    private void QueueHistorySnapshot(string reason)
+    {
+        if (_suppressHistory) return;
+
+        _pendingHistoryReason = reason;
+        _historyDebounce ??= new System.Timers.Timer(300) { AutoReset = false };
+        _historyDebounce.Stop();
+        _historyDebounce.Start();
+    }
+
+    private void HistoryDebounceElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            if (_suppressHistory) return;
+            _undoRedo.PushSnapshot(_sceneService.CloneMixer(Mixer), _pendingHistoryReason);
+        });
+    }
+
+    private async Task ApplySceneModelAsync(SceneModel scene, bool pushCurrentToUndo = true, bool makeBackupBeforeLoad = true)
+    {
+        if (pushCurrentToUndo)
+            _undoRedo.PushSnapshot(_sceneService.CloneMixer(Mixer), "Before scene load");
+
+        if (makeBackupBeforeLoad)
+            await _sceneService.BackupBeforeLoadAsync(Mixer);
+
+        _suppressHistory = true;
+        try
+        {
+            var target = _sceneService.CloneMixer(scene.Snapshot);
+            await _sceneTransition.ApplySceneAsync(Mixer, target, 450);
+            Mixer = target;
+            RebuildViewModelsAfterMixerSwap();
+            StatusText = $"Scene loaded: {scene.Name}";
+        }
+        finally
+        {
+            _suppressHistory = false;
+        }
+    }
+
+    private void RebuildViewModelsAfterMixerSwap()
+    {
+        Routing = new RoutingViewModel(Mixer, _osc);
+        BusMix = new BusMixViewModel(Mixer, _osc);
+        MonitorMix = new MonitorMixViewModel(BusMix);
+        SceneManager.RefreshScenesCommand.Execute(null);
+        WireBusMix(BusMix);
+        FxRack.RebindModels(Mixer);
+        OnPropertyChanged(nameof(Channels));
+        OnPropertyChanged(nameof(MuteGroups));
+        OnPropertyChanged(nameof(IsSofActive));
+        OnPropertyChanged(nameof(SelectedSofBusIndex));
+        RebindKeyboard();
     }
 
     private void WireBusMix(BusMixViewModel busMix)

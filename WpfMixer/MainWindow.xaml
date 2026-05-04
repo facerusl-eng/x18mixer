@@ -65,6 +65,8 @@
                         <ComboBoxItem Content="Solo Singer" Tag="SoloSinger"/>
                         <ComboBoxItem Content="Acoustic Duo" Tag="AcousticDuo"/>
                         <ComboBoxItem Content="Karaoke" Tag="Karaoke"/>
+                        <ComboBoxItem Content="Full Band" Tag="FullBand"/>
+                        <ComboBoxItem Content="DJ Set" Tag="DjSet"/>
                     </ComboBox>
                     <Button Content="Save Scene" Style="{StaticResource PtButton}"
                             Command="{Binding SaveSceneCommand}" Margin="0,0,2,0"/>
@@ -254,6 +256,11 @@
             <!-- ─── MONITOR MIX TAB ─── -->
             <TabItem Header="MONITOR MIX">
                 <views:MonitorMixView DataContext="{Binding MonitorMix}" />
+            </TabItem>
+
+            <!-- ─── SCENES TAB ─── -->
+            <TabItem Header="SCENES">
+                <views:SceneManagerView DataContext="{Binding SceneManager}" />
             </TabItem>
 
             <!-- ─── ROUTING TAB ─── -->
